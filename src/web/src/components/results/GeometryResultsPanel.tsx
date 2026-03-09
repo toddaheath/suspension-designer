@@ -4,6 +4,7 @@ export default function GeometryResultsPanel() {
   const geometry = useCalculationStore((s) => s.geometryResult);
   const dynamics = useCalculationStore((s) => s.dynamicsResult);
   const antiGeo = useCalculationStore((s) => s.antiGeometryResult);
+  const steering = useCalculationStore((s) => s.steeringResult);
   const isLoading = useCalculationStore((s) => s.isLoading);
   const error = useCalculationStore((s) => s.error);
 
@@ -19,7 +20,7 @@ export default function GeometryResultsPanel() {
     );
   }
 
-  if (!geometry && !dynamics && !antiGeo) {
+  if (!geometry && !dynamics && !antiGeo && !steering) {
     return (
       <div className="p-4 text-sm text-gray-500">
         No results yet. Modify hardpoints to trigger calculation.
@@ -109,6 +110,15 @@ export default function GeometryResultsPanel() {
       ]
     : [];
 
+  const steeringRows: { label: string; value: string; unit: string }[] =
+    steering && steering.ackermannCurve.length > 0
+      ? steering.ackermannCurve.map((pt) => ({
+          label: `Steer ${pt.steeringAngleDegrees.toFixed(0)}°`,
+          value: pt.ackermannPercent.toFixed(1),
+          unit: '%',
+        }))
+      : [];
+
   return (
     <div className="p-3">
       {geometryRows.length > 0 && (
@@ -133,6 +143,14 @@ export default function GeometryResultsPanel() {
             Anti-Geometry
           </h3>
           <ResultTable rows={antiGeoRows} />
+        </>
+      )}
+      {steeringRows.length > 0 && (
+        <>
+          <h3 className="text-sm font-semibold text-gray-300 mb-3 mt-4">
+            Ackermann Geometry
+          </h3>
+          <ResultTable rows={steeringRows} />
         </>
       )}
     </div>

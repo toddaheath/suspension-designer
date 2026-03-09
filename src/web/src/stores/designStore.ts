@@ -1,9 +1,14 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type { DoubleWishboneHardpoints, VehicleParams, DesignData } from '../types/suspension';
-import { listDesigns, getDesign, createDesign, deleteDesign } from '../services/designService';
+import { listDesigns, getDesign, createDesign, updateDesign, deleteDesign } from '../services/designService';
 import type { DesignSummary, DesignDetail } from '../services/designService';
 import type { VehiclePreset } from '../data/vehiclePresets';
+import { useNotificationStore } from './notificationStore';
+
+function notify(type: 'success' | 'error', message: string) {
+  useNotificationStore.getState().addNotification(type, message);
+}
 
 const DEFAULT_HARDPOINTS: DoubleWishboneHardpoints = {
   upperWishboneFrontPivot: { x: 100, y: 250, z: 300 },
@@ -226,19 +231,22 @@ export const useDesignStore = create<DesignState>()(
       }),
 
     saveDesign: async () => {
-      const { name, hardpoints, vehicleParams } = get();
+      const { name, hardpoints, vehicleParams, designId } = get();
       set({ isSaving: true });
       try {
-        const result = await createDesign(name, hardpoints, vehicleParams);
+        const result = designId
+          ? await updateDesign(designId, name, hardpoints, vehicleParams)
+          : await createDesign(name, hardpoints, vehicleParams);
         set((state) => {
           state.designId = result.id;
           state.isDirty = false;
           state.isSaving = false;
         });
-        // Refresh the list
+        notify('success', `Design "${name}" saved`);
         get().fetchDesigns();
       } catch {
         set({ isSaving: false });
+        notify('error', 'Failed to save design');
       }
     },
 
@@ -249,7 +257,7 @@ export const useDesignStore = create<DesignState>()(
           applyDesignDetail(state, detail);
         });
       } catch {
-        // silently fail
+        notify('error', 'Failed to load design');
       }
     },
 
@@ -272,8 +280,9 @@ export const useDesignStore = create<DesignState>()(
             state.designId = null;
           }
         });
+        notify('success', 'Design deleted');
       } catch {
-        // silently fail
+        notify('error', 'Failed to delete design');
       }
     },
   }))

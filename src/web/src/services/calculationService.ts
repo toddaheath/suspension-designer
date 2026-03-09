@@ -9,6 +9,7 @@ import type {
   BumpSteerPoint,
   AntiGeometryResult,
   SteeringResult,
+  SweepResult,
   SuspensionDesignPayload,
 } from '../types/suspension';
 
@@ -117,6 +118,17 @@ export async function calculateSteering(
 ): Promise<SteeringResult> {
   const response = await apiClient.post<SteeringResult>(
     '/calculations/steering',
+    buildPayload(hardpoints, vehicleParams)
+  );
+  return response.data;
+}
+
+export async function calculateSweep(
+  hardpoints: DoubleWishboneHardpoints,
+  vehicleParams: VehicleParams
+): Promise<SweepResult> {
+  const response = await apiClient.post<SweepResult>(
+    '/calculations/sweep',
     buildPayload(hardpoints, vehicleParams)
   );
   return response.data;

@@ -56,6 +56,13 @@ export default function SuspensionViewer3D() {
         >
           Labels
         </button>
+        <button
+          onClick={() => sceneRef.current?.resetCamera()}
+          className="px-2 py-1 text-xs rounded border bg-gray-800 border-gray-600 text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+          title="Reset camera view"
+        >
+          Reset View
+        </button>
       </div>
     </div>
   );

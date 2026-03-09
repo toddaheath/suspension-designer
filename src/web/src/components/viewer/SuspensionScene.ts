@@ -31,6 +31,7 @@ export class SuspensionScene {
   private uprightLine: THREE.Line | null = null;
   private springDamper: THREE.Mesh | null = null;
   private tierodLine: THREE.Line | null = null;
+  private pushrodLine: THREE.Line | null = null;
   private wheelMesh: THREE.Mesh | null = null;
   private annotations: THREE.Group = new THREE.Group();
   private showAnnotations = true;
@@ -124,6 +125,7 @@ export class SuspensionScene {
     this.buildUpright(hardpoints);
     this.buildSpringDamper(hardpoints);
     this.buildTierod(hardpoints);
+    this.buildPushrod(hardpoints);
     this.buildWheel(hardpoints, tireRadius);
     this.buildAnnotations(hardpoints);
   }
@@ -137,6 +139,7 @@ export class SuspensionScene {
       this.uprightLine,
       this.springDamper,
       this.tierodLine,
+      this.pushrodLine,
       this.wheelMesh,
     ];
     for (const item of items) {
@@ -258,6 +261,15 @@ export class SuspensionScene {
     this.scene.add(this.tierodLine);
   }
 
+  private buildPushrod(hp: DoubleWishboneHardpoints): void {
+    const wheelEnd = toVec3(hp.pushrodWheelEnd);
+    const rockerEnd = toVec3(hp.pushrodRockerEnd);
+    const geom = new THREE.BufferGeometry().setFromPoints([wheelEnd, rockerEnd]);
+    const mat = new THREE.LineBasicMaterial({ color: 0x9b59b6, linewidth: 2 });
+    this.pushrodLine = new THREE.Line(geom, mat);
+    this.scene.add(this.pushrodLine);
+  }
+
   private buildWheel(hp: DoubleWishboneHardpoints, tireRadius: number): void {
     const center = toVec3(hp.wheelCenter);
     const geom = new THREE.CircleGeometry(tireRadius, 32);
@@ -332,6 +344,7 @@ export class SuspensionScene {
       ['TR-I', hp.tieRodInner, '#2ecc71'],
       ['TR-O', hp.tieRodOuter, '#2ecc71'],
       ['Spring', hp.springDamperUpper, '#f39c12'],
+      ['Pushrod', hp.pushrodRockerEnd, '#9b59b6'],
       ['Wheel', hp.wheelCenter, '#95a5a6'],
     ];
 
@@ -341,6 +354,12 @@ export class SuspensionScene {
       sprite.position.set(pos.x, pos.y + 25, pos.z);
       this.annotations.add(sprite);
     }
+  }
+
+  resetCamera(): void {
+    this.camera.position.set(800, 600, 800);
+    this.controls.target.set(0, 200, -400);
+    this.controls.update();
   }
 
   setAnnotationsVisible(visible: boolean): void {
