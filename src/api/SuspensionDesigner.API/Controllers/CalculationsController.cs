@@ -63,4 +63,27 @@ public class CalculationsController : ControllerBase
         var result = await _mediator.Send(new CalculateSteeringRequest(design), ct);
         return Ok(result);
     }
+
+    [HttpPost("bump-steer")]
+    public async Task<ActionResult<IReadOnlyList<BumpSteerPointDto>>> CalculateBumpSteer(
+        [FromBody] SuspensionDesignDto design, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new CalculateBumpSteerRequest(design), ct);
+        return Ok(result);
+    }
+
+    [HttpPost("sweep")]
+    public async Task<ActionResult<SweepResultDto>> CalculateSweep(
+        [FromBody] SuspensionDesignDto design, CancellationToken ct)
+    {
+        var geometry = await _mediator.Send(new CalculateGeometryRequest(design), ct);
+        var camberCurve = await _mediator.Send(new CalculateCamberCurveRequest(design), ct);
+        var rollCenter = await _mediator.Send(new CalculateRollCenterRequest(design), ct);
+        var dynamics = await _mediator.Send(new CalculateDynamicsRequest(design), ct);
+        var antiGeometry = await _mediator.Send(new CalculateAntiGeometryRequest(design), ct);
+        var steering = await _mediator.Send(new CalculateSteeringRequest(design), ct);
+        var bumpSteer = await _mediator.Send(new CalculateBumpSteerRequest(design), ct);
+
+        return Ok(new SweepResultDto(geometry, camberCurve, rollCenter, dynamics, antiGeometry, steering, bumpSteer));
+    }
 }

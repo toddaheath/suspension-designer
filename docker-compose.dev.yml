@@ -11,6 +11,36 @@ services:
       POSTGRES_DB: suspension_designer
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./src/api
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=suspension_designer;Username=postgres;Password=postgres"
+      Jwt__Secret: "dev-secret-key-at-least-32-characters-long!!"
+      Jwt__Issuer: "SuspensionDesigner"
+      Jwt__Audience: "SuspensionDesignerApp"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./src/web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
 
 volumes:
   pgdata:

@@ -1,0 +1,111 @@
+import type { DoubleWishboneHardpoints, VehicleParams } from '../types/suspension';
+
+export interface VehiclePreset {
+  id: string;
+  name: string;
+  description: string;
+  hardpoints: DoubleWishboneHardpoints;
+  vehicleParams: VehicleParams;
+}
+
+export const VEHICLE_PRESETS: VehiclePreset[] = [
+  {
+    id: 'fsae',
+    name: 'FSAE / Formula Student',
+    description: 'Typical FSAE car with 10" wheels',
+    hardpoints: {
+      upperWishboneFrontPivot: { x: 80, y: 180, z: 260 },
+      upperWishboneRearPivot: { x: -80, y: 180, z: 260 },
+      upperBallJoint: { x: 0, y: 500, z: 245 },
+      lowerWishboneFrontPivot: { x: 100, y: 160, z: 120 },
+      lowerWishboneRearPivot: { x: -100, y: 160, z: 120 },
+      lowerBallJoint: { x: 0, y: 520, z: 100 },
+      tieRodInner: { x: -60, y: 170, z: 130 },
+      tieRodOuter: { x: -60, y: 510, z: 120 },
+      springDamperLower: { x: 0, y: 350, z: 115 },
+      springDamperUpper: { x: 0, y: 280, z: 360 },
+      pushrodWheelEnd: { x: 0, y: 420, z: 110 },
+      pushrodRockerEnd: { x: 0, y: 250, z: 310 },
+      wheelCenter: { x: 0, y: 540, z: 190 },
+      contactPatch: { x: 0, y: 540, z: 0 },
+    },
+    vehicleParams: {
+      trackWidth: 1200,
+      wheelbase: 1550,
+      sprungMass: 200,
+      unsprungMass: 18,
+      springRate: 26000,
+      dampingCoefficient: 1200,
+      rideHeight: 35,
+      tireRadius: 190,
+      cgHeight: 280,
+      frontBrakeProportion: 0.62,
+    },
+  },
+  {
+    id: 'road-sport',
+    name: 'Road Sport Car',
+    description: 'Street sports car with 18" wheels',
+    hardpoints: {
+      upperWishboneFrontPivot: { x: 120, y: 320, z: 380 },
+      upperWishboneRearPivot: { x: -120, y: 320, z: 380 },
+      upperBallJoint: { x: 0, y: 720, z: 355 },
+      lowerWishboneFrontPivot: { x: 140, y: 280, z: 180 },
+      lowerWishboneRearPivot: { x: -140, y: 280, z: 180 },
+      lowerBallJoint: { x: 0, y: 740, z: 160 },
+      tieRodInner: { x: -100, y: 300, z: 195 },
+      tieRodOuter: { x: -100, y: 730, z: 185 },
+      springDamperLower: { x: 0, y: 500, z: 175 },
+      springDamperUpper: { x: 0, y: 420, z: 500 },
+      pushrodWheelEnd: { x: 0, y: 600, z: 170 },
+      pushrodRockerEnd: { x: 0, y: 380, z: 440 },
+      wheelCenter: { x: 0, y: 770, z: 280 },
+      contactPatch: { x: 0, y: 770, z: 0 },
+    },
+    vehicleParams: {
+      trackWidth: 1540,
+      wheelbase: 2500,
+      sprungMass: 550,
+      unsprungMass: 40,
+      springRate: 35000,
+      dampingCoefficient: 2500,
+      rideHeight: 65,
+      tireRadius: 280,
+      cgHeight: 450,
+      frontBrakeProportion: 0.58,
+    },
+  },
+  {
+    id: 'gt-race',
+    name: 'GT Race Car',
+    description: 'GT3/GT4 class race car',
+    hardpoints: {
+      upperWishboneFrontPivot: { x: 110, y: 300, z: 340 },
+      upperWishboneRearPivot: { x: -110, y: 300, z: 340 },
+      upperBallJoint: { x: 0, y: 700, z: 320 },
+      lowerWishboneFrontPivot: { x: 130, y: 260, z: 160 },
+      lowerWishboneRearPivot: { x: -130, y: 260, z: 160 },
+      lowerBallJoint: { x: 0, y: 720, z: 140 },
+      tieRodInner: { x: -90, y: 275, z: 170 },
+      tieRodOuter: { x: -90, y: 710, z: 160 },
+      springDamperLower: { x: 0, y: 480, z: 155 },
+      springDamperUpper: { x: 0, y: 400, z: 470 },
+      pushrodWheelEnd: { x: 0, y: 580, z: 150 },
+      pushrodRockerEnd: { x: 0, y: 360, z: 400 },
+      wheelCenter: { x: 0, y: 750, z: 250 },
+      contactPatch: { x: 0, y: 750, z: 0 },
+    },
+    vehicleParams: {
+      trackWidth: 1620,
+      wheelbase: 2700,
+      sprungMass: 480,
+      unsprungMass: 35,
+      springRate: 80000,
+      dampingCoefficient: 4000,
+      rideHeight: 50,
+      tireRadius: 250,
+      cgHeight: 380,
+      frontBrakeProportion: 0.60,
+    },
+  },
+];

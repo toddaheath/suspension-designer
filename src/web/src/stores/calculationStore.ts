@@ -3,75 +3,73 @@ import type {
   DoubleWishboneHardpoints,
   VehicleParams,
   GeometryResult,
+  DynamicsResult,
   CamberCurvePoint,
   RollCenterPoint,
-  MotionRatioPoint,
+  BumpSteerPoint,
+  AntiGeometryResult,
+  SteeringResult,
 } from '../types/suspension';
 import {
   calculateGeometry,
   calculateCamberCurve,
   calculateRollCenter,
-  calculateMotionRatio,
+  calculateDynamics,
+  calculateBumpSteer,
+  calculateAntiGeometry,
+  calculateSteering,
 } from '../services/calculationService';
 
 interface CalculationState {
   geometryResult: GeometryResult | null;
+  dynamicsResult: DynamicsResult | null;
+  antiGeometryResult: AntiGeometryResult | null;
+  steeringResult: SteeringResult | null;
   camberCurve: CamberCurvePoint[];
   rollCenterCurve: RollCenterPoint[];
-  motionRatioCurve: MotionRatioPoint[];
+  bumpSteerCurve: BumpSteerPoint[];
   isLoading: boolean;
   error: string | null;
-  fetchGeometry: (hardpoints: DoubleWishboneHardpoints) => Promise<void>;
-  fetchCamberCurve: (hardpoints: DoubleWishboneHardpoints) => Promise<void>;
-  fetchDynamics: (hardpoints: DoubleWishboneHardpoints, params: VehicleParams) => Promise<void>;
-  fetchRollCenter: (hardpoints: DoubleWishboneHardpoints, params: VehicleParams) => Promise<void>;
+  fetchAll: (hardpoints: DoubleWishboneHardpoints, params: VehicleParams) => Promise<void>;
 }
 
 export const useCalculationStore = create<CalculationState>((set) => ({
   geometryResult: null,
+  dynamicsResult: null,
+  antiGeometryResult: null,
+  steeringResult: null,
   camberCurve: [],
   rollCenterCurve: [],
-  motionRatioCurve: [],
+  bumpSteerCurve: [],
   isLoading: false,
   error: null,
 
-  fetchGeometry: async (hardpoints) => {
+  fetchAll: async (hardpoints, params) => {
+    set({ isLoading: true, error: null });
     try {
-      const result = await calculateGeometry(hardpoints);
-      set({ geometryResult: result });
+      const [geometry, camber, rollCenter, dynamics, bumpSteer, antiGeo, steering] =
+        await Promise.all([
+          calculateGeometry(hardpoints, params),
+          calculateCamberCurve(hardpoints, params),
+          calculateRollCenter(hardpoints, params),
+          calculateDynamics(hardpoints, params),
+          calculateBumpSteer(hardpoints, params),
+          calculateAntiGeometry(hardpoints, params),
+          calculateSteering(hardpoints, params),
+        ]);
+      set({
+        geometryResult: geometry,
+        camberCurve: camber,
+        rollCenterCurve: rollCenter,
+        dynamicsResult: dynamics,
+        bumpSteerCurve: bumpSteer,
+        antiGeometryResult: antiGeo,
+        steeringResult: steering,
+        isLoading: false,
+      });
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Geometry calculation failed';
-      set({ error: message });
-    }
-  },
-
-  fetchCamberCurve: async (hardpoints) => {
-    try {
-      const data = await calculateCamberCurve(hardpoints);
-      set({ camberCurve: data });
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Camber curve calculation failed';
-      set({ error: message });
-    }
-  },
-
-  fetchDynamics: async (hardpoints) => {
-    try {
-      const data = await calculateMotionRatio(hardpoints);
-      set({ motionRatioCurve: data });
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Motion ratio calculation failed';
-      set({ error: message });
-    }
-  },
-
-  fetchRollCenter: async (hardpoints, params) => {
-    try {
-      const data = await calculateRollCenter(hardpoints, params);
-      set({ rollCenterCurve: data });
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Roll center calculation failed';
-      set({ error: message });
+      const message = err instanceof Error ? err.message : 'Calculation failed';
+      set({ error: message, isLoading: false });
     }
   },
 }));

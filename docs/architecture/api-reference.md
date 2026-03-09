@@ -3,7 +3,7 @@
 ## Base URL
 
 ```
-http://localhost:5000/api
+http://localhost:5000/api/v1
 ```
 
 All endpoints return JSON. Authentication is via JWT Bearer token in the `Authorization` header where noted.
@@ -15,232 +15,182 @@ All endpoints return JSON. Authentication is via JWT Bearer token in the `Author
 All point coordinates are in millimeters (mm) using the SAE J670 coordinate system (X forward, Y left, Z up).
 
 ```json
-{
-  "x": 0.0,
-  "y": 625.0,
-  "z": 330.0
-}
+{ "x": 0.0, "y": 625.0, "z": 330.0 }
 ```
 
-### SuspensionCorner
+### SuspensionDesignDto
 
-Defines the geometry of one corner (e.g., front-left) of the suspension.
+Flat object containing 12 hardpoints (as Point3D) and vehicle parameters. Used as the request body for all calculation endpoints and design CRUD.
 
 ```json
 {
-  "upperArmInnerPivot": { "x": 0, "y": 300, "z": 350 },
-  "upperArmOuterPivot": { "x": 0, "y": 625, "z": 330 },
-  "lowerArmInnerPivot": { "x": 0, "y": 200, "z": 150 },
-  "lowerArmOuterPivot": { "x": 0, "y": 700, "z": 130 },
-  "tieRodInnerEnd": { "x": -50, "y": 280, "z": 140 },
-  "tieRodOuterEnd": { "x": -50, "y": 650, "z": 130 },
-  "springAttachmentArm": { "x": 0, "y": 400, "z": 150 },
-  "springAttachmentChassis": { "x": 0, "y": 350, "z": 500 },
-  "wheelCenter": { "x": 0, "y": 700, "z": 310 },
-  "contactPatch": { "x": 0, "y": 720, "z": 0 }
+  "name": "My Design",
+  "suspensionType": 0,
+  "axlePosition": 0,
+  "upperWishboneFrontPivot": { "x": 100, "y": 250, "z": 300 },
+  "upperWishboneRearPivot": { "x": -100, "y": 250, "z": 300 },
+  "upperBallJoint": { "x": 0, "y": 600, "z": 280 },
+  "lowerWishboneFrontPivot": { "x": 120, "y": 200, "z": 150 },
+  "lowerWishboneRearPivot": { "x": -120, "y": 200, "z": 150 },
+  "lowerBallJoint": { "x": 0, "y": 620, "z": 130 },
+  "tieRodInner": { "x": -80, "y": 220, "z": 160 },
+  "tieRodOuter": { "x": -80, "y": 610, "z": 155 },
+  "springDamperUpper": { "x": 0, "y": 350, "z": 400 },
+  "springDamperLower": { "x": 0, "y": 400, "z": 150 },
+  "pushrodWheelEnd": { "x": 0, "y": 500, "z": 140 },
+  "pushrodRockerEnd": { "x": 0, "y": 300, "z": 350 },
+  "trackWidth": 1200,
+  "wheelbase": 1550,
+  "sprungMass": 200,
+  "unsprungMass": 25,
+  "springRate": 25000,
+  "dampingCoefficient": 1500,
+  "rideHeight": 50,
+  "tireRadius": 228,
+  "cgHeight": 300,
+  "frontBrakeProportion": 0.6
 }
 ```
 
-### VehicleParameters
-
-```json
-{
-  "wheelbase": 2700,
-  "trackWidthFront": 1500,
-  "trackWidthRear": 1480,
-  "cgHeight": 500,
-  "sprungMassFront": 600,
-  "sprungMassRear": 550,
-  "springRateFront": 40,
-  "springRateRear": 35,
-  "damperRateFront": 3.0,
-  "damperRateRear": 2.5,
-  "frontBrakeBias": 0.65
-}
-```
-
-Units: lengths in mm, masses in kg, spring rates in N/mm, damper rates in N*s/mm.
+Units: lengths in mm, masses in kg, spring rates in N/mm, damping in N*s/mm.
 
 ---
 
-## Endpoints
+## Calculation Endpoints
 
-### Calculations
+All calculation endpoints accept a `SuspensionDesignDto` as the request body.
 
-#### POST /api/calculations/analyze
+### POST /api/v1/calculations/geometry
 
-Performs a full kinematic analysis of the given suspension geometry. Returns all calculated parameters.
-
-**Request body:**
-
-```json
-{
-  "frontLeft": { /* SuspensionCorner */ },
-  "frontRight": { /* SuspensionCorner */ },
-  "rearLeft": { /* SuspensionCorner */ },
-  "rearRight": { /* SuspensionCorner */ },
-  "vehicle": { /* VehicleParameters */ },
-  "travelRange": {
-    "bumpMm": 80,
-    "reboundMm": 80,
-    "stepMm": 2
-  }
-}
-```
+Static geometry results for the given hardpoints.
 
 **Response (200 OK):**
 
 ```json
 {
-  "frontLeft": {
-    "instantCenter": {
-      "y": 9771.4,
-      "z": -232.9,
-      "isParallel": false
-    },
-    "camberGain": {
-      "rateAtDesignHeight": 0.00631,
-      "curve": [
-        { "travel": -80, "camberChange": -0.505 },
-        { "travel": -78, "camberChange": -0.492 },
-        ...
-      ]
-    },
-    "scrubRadius": -28.75,
-    "casterAngle": 7.13,
-    "kpiAngle": 20.56,
-    "mechanicalTrail": 26.25,
-    "motionRatio": 0.586,
-    "wheelRate": 13.75,
-    "bumpSteer": {
-      "curve": [
-        { "travel": -80, "toeChange": 0.12 },
-        ...
-      ]
-    }
-  },
-  "frontRight": { /* mirror of frontLeft for symmetric */ },
-  "rearLeft": { /* similar structure */ },
-  "rearRight": { /* similar structure */ },
-  "front": {
-    "rollCenterHeight": 19.4,
-    "rollCenterLateralOffset": 0.0,
-    "antiDive": 39.9,
-    "antiLift": null
-  },
-  "rear": {
-    "rollCenterHeight": 85.2,
-    "rollCenterLateralOffset": 0.0,
-    "antiSquat": 31.2,
-    "antiLift": null
-  },
-  "rideFrequency": {
-    "front": 1.08,
-    "rear": 1.15,
-    "ratio": 1.065
-  },
-  "dampingRatio": {
-    "front": 0.254,
-    "rear": 0.231
-  },
-  "ackermann": {
-    "percentage": 72.5,
-    "curveBySteerAngle": [
-      { "innerAngle": 5, "idealOuterAngle": 4.88, "actualOuterAngle": 4.91 },
-      ...
-    ]
-  }
+  "instantCenter": { "x": 0, "y": 5000, "z": -100 },
+  "rollCenterHeight": 25.4,
+  "kingpinInclinationDegrees": 7.13,
+  "casterAngleDegrees": 5.21,
+  "scrubRadius": -28.75,
+  "mechanicalTrail": 26.25
 }
 ```
 
-#### POST /api/calculations/instant-center
+### POST /api/v1/calculations/camber-curve
 
-Computes only the instant center for a single suspension corner.
+Camber angle change vs wheel travel (-50mm to +50mm).
 
-**Request body:**
+**Response (200 OK):**
 
 ```json
-{
-  "upperInnerPivot": { "y": 300, "z": 350 },
-  "upperOuterPivot": { "y": 625, "z": 330 },
-  "lowerInnerPivot": { "y": 200, "z": 150 },
-  "lowerOuterPivot": { "y": 700, "z": 130 }
-}
+[
+  { "wheelTravel": -50, "camberAngleDegrees": -0.85 },
+  { "wheelTravel": -45, "camberAngleDegrees": -0.76 },
+  ...
+]
 ```
+
+### POST /api/v1/calculations/roll-center
+
+Roll center height vs body roll angle (0 to 5 degrees).
+
+**Response (200 OK):**
+
+```json
+[
+  { "rollAngleDegrees": 0, "rollCenterHeight": 25.4 },
+  { "rollAngleDegrees": 0.5, "rollCenterHeight": 24.8 },
+  ...
+]
+```
+
+### POST /api/v1/calculations/dynamics
+
+Static dynamics parameters: motion ratio, wheel rate, natural frequency, damping.
 
 **Response (200 OK):**
 
 ```json
 {
-  "y": 9771.4,
-  "z": -232.9,
-  "isParallel": false
+  "motionRatio": 0.586,
+  "wheelRate": 8587.5,
+  "naturalFrequency": 1.08,
+  "dampingRatio": 0.254,
+  "criticalDamping": 2950.0
 }
 ```
 
-#### POST /api/calculations/roll-center
+### POST /api/v1/calculations/anti-geometry
 
-Computes the roll center from left and right instant centers and track width.
-
-**Request body:**
-
-```json
-{
-  "leftInstantCenter": { "y": 9771.4, "z": -232.9 },
-  "rightInstantCenter": { "y": -9771.4, "z": -232.9 },
-  "trackWidth": 1500
-}
-```
+Anti-dive and anti-squat percentages.
 
 **Response (200 OK):**
 
 ```json
 {
-  "height": 19.4,
-  "lateralOffset": 0.0
+  "antiDivePercent": 39.9,
+  "antiSquatPercent": 31.2
 }
 ```
 
-#### POST /api/calculations/sweep
+### POST /api/v1/calculations/steering
 
-Computes kinematic parameters across a range of suspension travel.
-
-**Request body:**
-
-```json
-{
-  "corner": { /* SuspensionCorner */ },
-  "vehicle": { /* VehicleParameters */ },
-  "travelRange": {
-    "bumpMm": 80,
-    "reboundMm": 80,
-    "stepMm": 2
-  },
-  "parameters": ["camberGain", "bumpSteer", "rollCenterHeight", "motionRatio"]
-}
-```
+Ackermann percentage across steering angles 1-30 degrees.
 
 **Response (200 OK):**
 
 ```json
 {
-  "travelPoints": [-80, -78, -76, ...],
-  "camberGain": [-0.505, -0.492, -0.480, ...],
-  "bumpSteer": [0.12, 0.11, 0.10, ...],
-  "rollCenterHeight": [45.2, 42.1, 39.5, ...],
-  "motionRatio": [0.612, 0.608, 0.603, ...]
+  "ackermannCurve": [
+    { "steeringAngleDegrees": 1, "ackermannPercent": 72.5 },
+    { "steeringAngleDegrees": 2, "ackermannPercent": 71.8 },
+    ...
+  ]
+}
+```
+
+### POST /api/v1/calculations/bump-steer
+
+Bump steer (toe angle change) vs wheel travel (-50mm to +50mm).
+
+**Response (200 OK):**
+
+```json
+[
+  { "wheelTravel": -50, "toeAngleDegrees": 0.12 },
+  { "wheelTravel": -45, "toeAngleDegrees": 0.10 },
+  ...
+]
+```
+
+### POST /api/v1/calculations/sweep
+
+Full parametric sweep returning all calculations in one response.
+
+**Response (200 OK):**
+
+```json
+{
+  "geometry": { /* GeometryResult */ },
+  "camberCurve": [ /* CamberCurvePoint[] */ ],
+  "rollCenterMigration": [ /* RollCenterMigrationPoint[] */ ],
+  "dynamics": { /* DynamicsResult */ },
+  "antiGeometry": { /* AntiGeometryResult */ },
+  "steering": { /* SteeringResult */ },
+  "bumpSteer": [ /* BumpSteerPoint[] */ ]
 }
 ```
 
 ---
 
-### Projects
+## Design Endpoints
 
-All project endpoints require authentication.
+All design endpoints require authentication (`Authorization: Bearer <token>`).
 
-#### GET /api/projects
+### GET /api/v1/designs
 
-List all projects for the authenticated user.
+List all designs for the authenticated user.
 
 **Response (200 OK):**
 
@@ -249,120 +199,40 @@ List all projects for the authenticated user.
   {
     "id": "550e8400-e29b-41d4-a716-446655440000",
     "name": "Track Day Car Front Suspension",
-    "description": "Double wishbone front, optimized for camber gain",
     "createdAt": "2026-01-15T10:30:00Z",
     "updatedAt": "2026-02-20T14:22:00Z"
   }
 ]
 ```
 
-#### GET /api/projects/{id}
+### GET /api/v1/designs/{id}
 
-Get a single project with full geometry data.
+Get a single design with full geometry data.
 
-**Response (200 OK):**
+### POST /api/v1/designs
 
-```json
-{
-  "id": "550e8400-e29b-41d4-a716-446655440000",
-  "name": "Track Day Car Front Suspension",
-  "description": "Double wishbone front, optimized for camber gain",
-  "frontLeft": { /* SuspensionCorner */ },
-  "frontRight": { /* SuspensionCorner */ },
-  "rearLeft": { /* SuspensionCorner */ },
-  "rearRight": { /* SuspensionCorner */ },
-  "vehicle": { /* VehicleParameters */ },
-  "createdAt": "2026-01-15T10:30:00Z",
-  "updatedAt": "2026-02-20T14:22:00Z"
-}
-```
+Create a new design. Request body: `SuspensionDesignDto`.
 
-#### POST /api/projects
+**Response (201 Created):** Returns the created design with ID.
 
-Create a new project.
+### PUT /api/v1/designs/{id}
 
-**Request body:**
+Update an existing design. Request body: `SuspensionDesignDto`.
 
-```json
-{
-  "name": "New Suspension Design",
-  "description": "Initial geometry exploration",
-  "frontLeft": { /* SuspensionCorner */ },
-  "frontRight": { /* SuspensionCorner */ },
-  "rearLeft": { /* SuspensionCorner */ },
-  "rearRight": { /* SuspensionCorner */ },
-  "vehicle": { /* VehicleParameters */ }
-}
-```
+### DELETE /api/v1/designs/{id}
 
-**Response (201 Created):**
-
-```json
-{
-  "id": "660e8400-e29b-41d4-a716-446655440001",
-  "name": "New Suspension Design",
-  "createdAt": "2026-03-03T09:00:00Z"
-}
-```
-
-#### PUT /api/projects/{id}
-
-Update an existing project.
-
-**Request body:** Same as POST.
-
-**Response (200 OK):**
-
-```json
-{
-  "id": "660e8400-e29b-41d4-a716-446655440001",
-  "updatedAt": "2026-03-03T10:15:00Z"
-}
-```
-
-#### DELETE /api/projects/{id}
-
-Delete a project.
-
-**Response (204 No Content)**
+Delete a design. **Response (204 No Content)**
 
 ---
 
-### Authentication
+## Authentication Endpoints
 
-#### POST /api/auth/register
-
-Register a new user account.
-
-**Request body:**
+### POST /api/v1/auth/register
 
 ```json
 {
   "email": "engineer@example.com",
-  "password": "SecurePassword123!",
-  "displayName": "Jane Engineer"
-}
-```
-
-**Response (201 Created):**
-
-```json
-{
-  "userId": "user-uuid",
-  "email": "engineer@example.com",
-  "displayName": "Jane Engineer"
-}
-```
-
-#### POST /api/auth/login
-
-Authenticate and receive a JWT token.
-
-**Request body:**
-
-```json
-{
-  "email": "engineer@example.com",
+  "name": "Jane Engineer",
   "password": "SecurePassword123!"
 }
 ```
@@ -372,24 +242,41 @@ Authenticate and receive a JWT token.
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIs...",
-  "expiresAt": "2026-03-04T09:00:00Z",
-  "userId": "user-uuid",
-  "displayName": "Jane Engineer"
+  "user": { "id": "user-uuid", "email": "engineer@example.com", "name": "Jane Engineer" }
 }
 ```
 
-#### POST /api/auth/refresh
+### POST /api/v1/auth/login
 
-Refresh an expiring JWT token.
+```json
+{
+  "email": "engineer@example.com",
+  "password": "SecurePassword123!"
+}
+```
 
-**Request header:** `Authorization: Bearer <current-token>`
+**Response (200 OK):** Same as register.
+
+### POST /api/v1/auth/refresh
+
+Requires `Authorization: Bearer <current-token>`.
+
+**Response (200 OK):** Same as register/login (new token + user).
+
+---
+
+## Health Check
+
+### GET /api/health
+
+No authentication required.
 
 **Response (200 OK):**
 
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIs...",
-  "expiresAt": "2026-03-04T09:00:00Z"
+  "status": "healthy",
+  "timestamp": "2026-03-09T12:00:00Z"
 }
 ```
 
@@ -397,30 +284,10 @@ Refresh an expiring JWT token.
 
 ## Error Responses
 
-All error responses follow a consistent format:
-
-```json
-{
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "One or more validation errors occurred.",
-    "details": [
-      {
-        "field": "frontLeft.upperArmInnerPivot.y",
-        "message": "Value must be between -2000 and 2000 mm."
-      }
-    ]
-  }
-}
-```
-
-### Error Codes
-
-| HTTP Status | Code | Description |
-|-------------|------|-------------|
-| 400 | `VALIDATION_ERROR` | Invalid input parameters |
-| 400 | `CALCULATION_ERROR` | Geometry produces degenerate result (e.g., parallel arms) |
-| 401 | `UNAUTHORIZED` | Missing or invalid JWT token |
-| 403 | `FORBIDDEN` | User does not own this resource |
-| 404 | `NOT_FOUND` | Project or resource not found |
-| 500 | `INTERNAL_ERROR` | Unexpected server error |
+| HTTP Status | Description |
+|-------------|-------------|
+| 400 | Validation error (invalid input) |
+| 401 | Missing or invalid JWT token |
+| 404 | Design not found |
+| 409 | Conflict (e.g., email already registered) |
+| 500 | Internal server error |

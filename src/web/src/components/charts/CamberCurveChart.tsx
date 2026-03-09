@@ -25,7 +25,7 @@ export default function CamberCurveChart() {
       <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
         <XAxis
-          dataKey="travel"
+          dataKey="wheelTravel"
           label={{ value: 'Wheel Travel (mm)', position: 'bottom', offset: 0, fill: '#9ca3af', fontSize: 12 }}
           tick={{ fill: '#9ca3af', fontSize: 11 }}
           stroke="#4b5563"
@@ -40,11 +40,11 @@ export default function CamberCurveChart() {
           labelStyle={{ color: '#d1d5db' }}
           itemStyle={{ color: '#e74c3c' }}
           formatter={(value: number | undefined) => [value != null ? value.toFixed(3) + ' deg' : '', 'Camber']}
-          labelFormatter={(label) => `Travel: ${label} mm`}
+          labelFormatter={(label) => `Wheel Travel: ${label} mm`}
         />
         <Line
           type="monotone"
-          dataKey="camberAngle"
+          dataKey="camberAngleDegrees"
           stroke="#e74c3c"
           strokeWidth={2}
           dot={{ fill: '#e74c3c', r: 2 }}

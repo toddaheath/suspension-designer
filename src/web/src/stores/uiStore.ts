@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-type ChartTab = 'camber' | 'rollCenter' | 'motionRatio';
+type ChartTab = 'camber' | 'rollCenter' | 'dynamics' | 'bumpSteer' | 'antiGeometry' | 'steering';
 type ViewMode = '3d' | 'charts' | 'split';
 
 interface UIState {

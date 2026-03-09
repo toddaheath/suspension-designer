@@ -32,6 +32,8 @@ export class SuspensionScene {
   private springDamper: THREE.Mesh | null = null;
   private tierodLine: THREE.Line | null = null;
   private wheelMesh: THREE.Mesh | null = null;
+  private annotations: THREE.Group = new THREE.Group();
+  private showAnnotations = true;
 
   constructor(container: HTMLDivElement) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
@@ -54,6 +56,7 @@ export class SuspensionScene {
     this.addLights();
     this.addGroundGrid();
     this.addAxes();
+    this.scene.add(this.annotations);
 
     this.resize(container.clientWidth, container.clientHeight);
     this.animate();
@@ -114,14 +117,15 @@ export class SuspensionScene {
     this.renderer.setSize(width, height);
   }
 
-  update(hardpoints: DoubleWishboneHardpoints): void {
+  update(hardpoints: DoubleWishboneHardpoints, tireRadius = 228): void {
     this.clearGeometry();
     this.buildUpperWishbone(hardpoints);
     this.buildLowerWishbone(hardpoints);
     this.buildUpright(hardpoints);
     this.buildSpringDamper(hardpoints);
     this.buildTierod(hardpoints);
-    this.buildWheel(hardpoints);
+    this.buildWheel(hardpoints, tireRadius);
+    this.buildAnnotations(hardpoints);
   }
 
   private clearGeometry(): void {
@@ -186,9 +190,9 @@ export class SuspensionScene {
 
   private buildUpperWishbone(hp: DoubleWishboneHardpoints): void {
     const { mesh, edges } = this.buildTriangleMesh(
-      toVec3(hp.upperWishboneInboardFront),
-      toVec3(hp.upperWishboneInboardRear),
-      toVec3(hp.upperWishboneOutboard),
+      toVec3(hp.upperWishboneFrontPivot),
+      toVec3(hp.upperWishboneRearPivot),
+      toVec3(hp.upperBallJoint),
       COLORS.upperWishbone
     );
     this.upperWishboneMesh = mesh;
@@ -199,9 +203,9 @@ export class SuspensionScene {
 
   private buildLowerWishbone(hp: DoubleWishboneHardpoints): void {
     const { mesh, edges } = this.buildTriangleMesh(
-      toVec3(hp.lowerWishboneInboardFront),
-      toVec3(hp.lowerWishboneInboardRear),
-      toVec3(hp.lowerWishboneOutboard),
+      toVec3(hp.lowerWishboneFrontPivot),
+      toVec3(hp.lowerWishboneRearPivot),
+      toVec3(hp.lowerBallJoint),
       COLORS.lowerWishbone
     );
     this.lowerWishboneMesh = mesh;
@@ -211,8 +215,8 @@ export class SuspensionScene {
   }
 
   private buildUpright(hp: DoubleWishboneHardpoints): void {
-    const upper = toVec3(hp.upperWishboneOutboard);
-    const lower = toVec3(hp.lowerWishboneOutboard);
+    const upper = toVec3(hp.upperBallJoint);
+    const lower = toVec3(hp.lowerBallJoint);
     const geom = new THREE.BufferGeometry().setFromPoints([upper, lower]);
     const mat = new THREE.LineBasicMaterial({ color: COLORS.upright, linewidth: 3 });
     this.uprightLine = new THREE.Line(geom, mat);
@@ -220,8 +224,8 @@ export class SuspensionScene {
   }
 
   private buildSpringDamper(hp: DoubleWishboneHardpoints): void {
-    const bottom = toVec3(hp.springWheelSide);
-    const top = toVec3(hp.springBodySide);
+    const bottom = toVec3(hp.springDamperLower);
+    const top = toVec3(hp.springDamperUpper);
     const direction = new THREE.Vector3().subVectors(top, bottom);
     const length = direction.length();
     const center = new THREE.Vector3().addVectors(bottom, top).multiplyScalar(0.5);
@@ -246,18 +250,16 @@ export class SuspensionScene {
   }
 
   private buildTierod(hp: DoubleWishboneHardpoints): void {
-    const inboard = toVec3(hp.tierodInboard);
-    const outboard = toVec3(hp.tierodOutboard);
+    const inboard = toVec3(hp.tieRodInner);
+    const outboard = toVec3(hp.tieRodOuter);
     const geom = new THREE.BufferGeometry().setFromPoints([inboard, outboard]);
     const mat = new THREE.LineBasicMaterial({ color: COLORS.tierod, linewidth: 2 });
     this.tierodLine = new THREE.Line(geom, mat);
     this.scene.add(this.tierodLine);
   }
 
-  private buildWheel(hp: DoubleWishboneHardpoints): void {
+  private buildWheel(hp: DoubleWishboneHardpoints, tireRadius: number): void {
     const center = toVec3(hp.wheelCenter);
-
-    const tireRadius = 330;
     const geom = new THREE.CircleGeometry(tireRadius, 32);
     const mat = new THREE.MeshPhongMaterial({
       color: COLORS.wheel,
@@ -270,7 +272,6 @@ export class SuspensionScene {
     mesh.position.copy(center);
 
     // Align normal of circle to the lateral (Y/SAE) direction
-    // The circle faces +Z by default in Three.js, we want it to face -Z (SAE Y direction)
     const defaultNormal = new THREE.Vector3(0, 0, 1);
     const wheelNormal = new THREE.Vector3(0, 0, -1);
     const quat = new THREE.Quaternion().setFromUnitVectors(defaultNormal, wheelNormal);
@@ -290,9 +291,61 @@ export class SuspensionScene {
     const group = new THREE.Group();
     group.add(mesh);
     group.add(ring);
-    // Store the group's first child mesh for cleanup -- we'll use a mesh reference
     this.wheelMesh = mesh;
     this.scene.add(group);
+  }
+
+  private createTextSprite(text: string, color: string = '#ffffff'): THREE.Sprite {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d')!;
+    canvas.width = 256;
+    canvas.height = 64;
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, 128, 32);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.minFilter = THREE.LinearFilter;
+    const mat = new THREE.SpriteMaterial({ map: texture, depthTest: false, transparent: true });
+    const sprite = new THREE.Sprite(mat);
+    sprite.scale.set(120, 30, 1);
+    return sprite;
+  }
+
+  private buildAnnotations(hp: DoubleWishboneHardpoints): void {
+    // Clear old
+    while (this.annotations.children.length) {
+      const child = this.annotations.children[0];
+      this.annotations.remove(child);
+      if (child instanceof THREE.Sprite) {
+        (child.material as THREE.SpriteMaterial).map?.dispose();
+        child.material.dispose();
+      }
+    }
+
+    if (!this.showAnnotations) return;
+
+    const labels: [string, { x: number; y: number; z: number }, string][] = [
+      ['UBJ', hp.upperBallJoint, '#e74c3c'],
+      ['LBJ', hp.lowerBallJoint, '#3498db'],
+      ['TR-I', hp.tieRodInner, '#2ecc71'],
+      ['TR-O', hp.tieRodOuter, '#2ecc71'],
+      ['Spring', hp.springDamperUpper, '#f39c12'],
+      ['Wheel', hp.wheelCenter, '#95a5a6'],
+    ];
+
+    for (const [text, point, color] of labels) {
+      const sprite = this.createTextSprite(text, color);
+      const pos = toVec3(point);
+      sprite.position.set(pos.x, pos.y + 25, pos.z);
+      this.annotations.add(sprite);
+    }
+  }
+
+  setAnnotationsVisible(visible: boolean): void {
+    this.showAnnotations = visible;
+    this.annotations.visible = visible;
   }
 
   private animate = (): void => {

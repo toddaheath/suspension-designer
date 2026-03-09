@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SuspensionDesigner.Application;
 using SuspensionDesigner.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 using SuspensionDesigner.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -83,6 +84,14 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Auto-migrate database in development
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<SuspensionDesigner.Infrastructure.Data.ApplicationDbContext>();
+    db.Database.Migrate();
+}
+
 // Middleware
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
@@ -96,5 +105,7 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+app.MapGet("/api/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 
 app.Run();
