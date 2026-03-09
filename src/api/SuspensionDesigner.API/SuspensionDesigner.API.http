@@ -1,0 +1,6 @@
+@SuspensionDesigner.API_HostAddress = http://localhost:5068
+
+GET {{SuspensionDesigner.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

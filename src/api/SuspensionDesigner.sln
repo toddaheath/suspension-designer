@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuspensionDesigner.API", "SuspensionDesigner.API\SuspensionDesigner.API.csproj", "{2CA56E50-7E3C-46B7-8A91-31655ABD131F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuspensionDesigner.Core", "SuspensionDesigner.Core\SuspensionDesigner.Core.csproj", "{4E7AC907-CA2E-4DCC-95EE-642AEB99A3ED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuspensionDesigner.Application", "SuspensionDesigner.Application\SuspensionDesigner.Application.csproj", "{47BB7CF8-6AE4-4DEB-9207-E7FF5488DD6C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuspensionDesigner.Infrastructure", "SuspensionDesigner.Infrastructure\SuspensionDesigner.Infrastructure.csproj", "{919EB099-A5DF-4F3C-BB90-887F0F85EB28}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuspensionDesigner.Tests", "SuspensionDesigner.Tests\SuspensionDesigner.Tests.csproj", "{6CF1B766-B350-4FE4-A1EC-F047100EAD40}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2CA56E50-7E3C-46B7-8A91-31655ABD131F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2CA56E50-7E3C-46B7-8A91-31655ABD131F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2CA56E50-7E3C-46B7-8A91-31655ABD131F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2CA56E50-7E3C-46B7-8A91-31655ABD131F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E7AC907-CA2E-4DCC-95EE-642AEB99A3ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E7AC907-CA2E-4DCC-95EE-642AEB99A3ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E7AC907-CA2E-4DCC-95EE-642AEB99A3ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E7AC907-CA2E-4DCC-95EE-642AEB99A3ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47BB7CF8-6AE4-4DEB-9207-E7FF5488DD6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47BB7CF8-6AE4-4DEB-9207-E7FF5488DD6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47BB7CF8-6AE4-4DEB-9207-E7FF5488DD6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47BB7CF8-6AE4-4DEB-9207-E7FF5488DD6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{919EB099-A5DF-4F3C-BB90-887F0F85EB28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{919EB099-A5DF-4F3C-BB90-887F0F85EB28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{919EB099-A5DF-4F3C-BB90-887F0F85EB28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{919EB099-A5DF-4F3C-BB90-887F0F85EB28}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6CF1B766-B350-4FE4-A1EC-F047100EAD40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6CF1B766-B350-4FE4-A1EC-F047100EAD40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6CF1B766-B350-4FE4-A1EC-F047100EAD40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6CF1B766-B350-4FE4-A1EC-F047100EAD40}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
