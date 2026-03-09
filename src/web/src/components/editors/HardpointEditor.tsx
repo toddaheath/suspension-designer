@@ -9,38 +9,45 @@ const HARDPOINT_GROUPS: {
   {
     label: 'Upper Wishbone',
     points: [
-      { key: 'upperWishboneInboardFront', label: 'Inboard Front' },
-      { key: 'upperWishboneInboardRear', label: 'Inboard Rear' },
-      { key: 'upperWishboneOutboard', label: 'Outboard' },
+      { key: 'upperWishboneFrontPivot', label: 'Front Pivot' },
+      { key: 'upperWishboneRearPivot', label: 'Rear Pivot' },
+      { key: 'upperBallJoint', label: 'Ball Joint' },
     ],
   },
   {
     label: 'Lower Wishbone',
     points: [
-      { key: 'lowerWishboneInboardFront', label: 'Inboard Front' },
-      { key: 'lowerWishboneInboardRear', label: 'Inboard Rear' },
-      { key: 'lowerWishboneOutboard', label: 'Outboard' },
+      { key: 'lowerWishboneFrontPivot', label: 'Front Pivot' },
+      { key: 'lowerWishboneRearPivot', label: 'Rear Pivot' },
+      { key: 'lowerBallJoint', label: 'Ball Joint' },
     ],
   },
   {
     label: 'Tie Rod',
     points: [
-      { key: 'tierodInboard', label: 'Inboard' },
-      { key: 'tierodOutboard', label: 'Outboard' },
+      { key: 'tieRodInner', label: 'Inner' },
+      { key: 'tieRodOuter', label: 'Outer' },
     ],
   },
   {
     label: 'Wheel & Contact',
     points: [
-      { key: 'wheelCenter', label: 'Center' },
+      { key: 'wheelCenter', label: 'Wheel Center' },
       { key: 'contactPatch', label: 'Contact Patch' },
     ],
   },
   {
-    label: 'Spring Mount',
+    label: 'Spring / Damper',
     points: [
-      { key: 'springWheelSide', label: 'Wheel Side' },
-      { key: 'springBodySide', label: 'Body Side' },
+      { key: 'springDamperLower', label: 'Lower (Wheel Side)' },
+      { key: 'springDamperUpper', label: 'Upper (Body Side)' },
+    ],
+  },
+  {
+    label: 'Pushrod',
+    points: [
+      { key: 'pushrodWheelEnd', label: 'Wheel End' },
+      { key: 'pushrodRockerEnd', label: 'Rocker End' },
     ],
   },
 ];

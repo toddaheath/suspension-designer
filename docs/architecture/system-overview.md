@@ -141,7 +141,7 @@ Load:  GET /api/projects/{id} → EF Core → PostgreSQL → Zustand Store
 ### Core Entities
 
 ```
-SuspensionProject
+SuspensionDesign
 ├── Name, Description, CreatedAt, UpdatedAt
 ├── FrontSuspension: SuspensionCorner
 │   ├── UpperArmInnerPivot: Point3D

@@ -25,7 +25,7 @@ export default function RollCenterChart() {
       <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
         <XAxis
-          dataKey="rollAngle"
+          dataKey="rollAngleDegrees"
           label={{ value: 'Roll Angle (deg)', position: 'bottom', offset: 0, fill: '#9ca3af', fontSize: 12 }}
           tick={{ fill: '#9ca3af', fontSize: 11 }}
           stroke="#4b5563"

@@ -22,7 +22,8 @@ public class AuthController : ControllerBase
 
     public record RegisterRequest(string Email, string Name, string Password);
     public record LoginRequest(string Email, string Password);
-    public record AuthResponse(string Token, string Email, string Name);
+    public record AuthUserResponse(string Id, string Email, string Name);
+    public record AuthResponse(string Token, AuthUserResponse User);
 
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponse>> Register(
@@ -44,7 +45,7 @@ public class AuthController : ControllerBase
         await _context.SaveChangesAsync(ct);
 
         var token = _tokenService.GenerateToken(user);
-        return Ok(new AuthResponse(token, user.Email, user.Name));
+        return Ok(new AuthResponse(token, new AuthUserResponse(user.Id.ToString(), user.Email, user.Name)));
     }
 
     [HttpPost("login")]
@@ -56,7 +57,23 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Invalid email or password" });
 
         var token = _tokenService.GenerateToken(user);
-        return Ok(new AuthResponse(token, user.Email, user.Name));
+        return Ok(new AuthResponse(token, new AuthUserResponse(user.Id.ToString(), user.Email, user.Name)));
+    }
+
+    [HttpPost("refresh")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
+    public async Task<ActionResult<AuthResponse>> Refresh(CancellationToken ct)
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (userId is null)
+            return Unauthorized();
+
+        var user = await _context.Users.FindAsync(new object[] { Guid.Parse(userId) }, ct);
+        if (user is null)
+            return Unauthorized();
+
+        var token = _tokenService.GenerateToken(user);
+        return Ok(new AuthResponse(token, new AuthUserResponse(user.Id.ToString(), user.Email, user.Name)));
     }
 
     private static string HashPassword(string password)

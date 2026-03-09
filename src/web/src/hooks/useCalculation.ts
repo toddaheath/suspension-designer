@@ -5,9 +5,7 @@ import { useCalculationStore } from '../stores/calculationStore';
 export function useCalculation() {
   const hardpoints = useDesignStore((s) => s.hardpoints);
   const vehicleParams = useDesignStore((s) => s.vehicleParams);
-  const { fetchGeometry, fetchCamberCurve, fetchDynamics, fetchRollCenter } =
-    useCalculationStore();
-
+  const fetchAll = useCalculationStore((s) => s.fetchAll);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -15,13 +13,8 @@ export function useCalculation() {
       clearTimeout(timerRef.current);
     }
 
-    timerRef.current = setTimeout(async () => {
-      await Promise.all([
-        fetchGeometry(hardpoints),
-        fetchCamberCurve(hardpoints),
-        fetchDynamics(hardpoints, vehicleParams),
-        fetchRollCenter(hardpoints, vehicleParams),
-      ]);
+    timerRef.current = setTimeout(() => {
+      fetchAll(hardpoints, vehicleParams);
     }, 300);
 
     return () => {
@@ -29,5 +22,5 @@ export function useCalculation() {
         clearTimeout(timerRef.current);
       }
     };
-  }, [hardpoints, vehicleParams, fetchGeometry, fetchCamberCurve, fetchDynamics, fetchRollCenter]);
+  }, [hardpoints, vehicleParams, fetchAll]);
 }

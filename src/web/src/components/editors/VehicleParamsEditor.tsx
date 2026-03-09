@@ -16,6 +16,8 @@ const PARAM_DEFS: {
   { key: 'dampingCoefficient', label: 'Damping Coeff.', unit: 'Ns/m', step: 100 },
   { key: 'rideHeight', label: 'Ride Height', unit: 'mm', step: 5 },
   { key: 'tireRadius', label: 'Tire Radius', unit: 'mm', step: 5 },
+  { key: 'cgHeight', label: 'CG Height', unit: 'mm', step: 5 },
+  { key: 'frontBrakeProportion', label: 'Front Brake Bias', unit: '', step: 0.05 },
 ];
 
 export default function VehicleParamsEditor() {

@@ -1,8 +1,12 @@
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
 import { useDesignStore } from '../../stores/designStore';
+import { useCalculationStore } from '../../stores/calculationStore';
+import { useNavigate } from 'react-router-dom';
 import HardpointEditor from '../editors/HardpointEditor';
 import VehicleParamsEditor from '../editors/VehicleParamsEditor';
+import DesignListPanel from '../designs/DesignListPanel';
+import DesignToolbar from '../designs/DesignToolbar';
 import SuspensionViewer3D from '../viewer/SuspensionViewer3D';
 import ChartPanel from '../charts/ChartPanel';
 import GeometryResultsPanel from '../results/GeometryResultsPanel';
@@ -17,6 +21,9 @@ export default function AppLayout() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const isCalculating = useCalculationStore((s) => s.isLoading);
+  const calcError = useCalculationStore((s) => s.error);
+  const navigate = useNavigate();
 
   return (
     <div className="h-screen flex flex-col bg-gray-950 text-gray-200">
@@ -36,6 +43,12 @@ export default function AppLayout() {
             {designName}
             {isDirty && <span className="text-yellow-400 ml-1">*</span>}
           </span>
+          {isCalculating && (
+            <span className="text-xs text-blue-400 animate-pulse">Calculating...</span>
+          )}
+          {calcError && (
+            <span className="text-xs text-red-400" title={calcError}>Calc error</span>
+          )}
         </div>
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
@@ -51,12 +64,12 @@ export default function AppLayout() {
               </button>
             </>
           ) : (
-            <a
-              href="/login"
+            <button
+              onClick={() => navigate('/login')}
               className="text-xs text-blue-400 hover:text-blue-300 px-2 py-1"
             >
               Login
-            </a>
+            </button>
           )}
           <button
             onClick={toggleResults}
@@ -73,6 +86,8 @@ export default function AppLayout() {
         {sidebarVisible && (
           <aside className="w-[300px] shrink-0 bg-[#1a1a2e] border-r border-gray-800 overflow-y-auto">
             <div className="p-3 space-y-3">
+              <DesignToolbar />
+              <DesignListPanel />
               <HardpointEditor />
               <VehicleParamsEditor />
             </div>

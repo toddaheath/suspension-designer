@@ -58,6 +58,19 @@ export const useAuthStore = create<AuthState>((set) => ({
     const token = localStorage.getItem('auth_token');
     if (token) {
       set({ token, isAuthenticated: true });
+      // Try to fetch user profile with stored token
+      apiClient
+        .post<AuthResponse>('/auth/refresh')
+        .then((res) => {
+          const { token: newToken, user } = res.data;
+          localStorage.setItem('auth_token', newToken);
+          set({ token: newToken, user, isAuthenticated: true });
+        })
+        .catch(() => {
+          // Token expired or invalid
+          localStorage.removeItem('auth_token');
+          set({ token: null, user: null, isAuthenticated: false });
+        });
     }
   },
 }));

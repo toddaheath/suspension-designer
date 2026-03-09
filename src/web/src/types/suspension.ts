@@ -5,18 +5,20 @@ export interface Point3D {
 }
 
 export interface DoubleWishboneHardpoints {
-  upperWishboneInboardFront: Point3D;
-  upperWishboneInboardRear: Point3D;
-  upperWishboneOutboard: Point3D;
-  lowerWishboneInboardFront: Point3D;
-  lowerWishboneInboardRear: Point3D;
-  lowerWishboneOutboard: Point3D;
-  tierodInboard: Point3D;
-  tierodOutboard: Point3D;
+  upperWishboneFrontPivot: Point3D;
+  upperWishboneRearPivot: Point3D;
+  upperBallJoint: Point3D;
+  lowerWishboneFrontPivot: Point3D;
+  lowerWishboneRearPivot: Point3D;
+  lowerBallJoint: Point3D;
+  tieRodInner: Point3D;
+  tieRodOuter: Point3D;
+  springDamperUpper: Point3D;
+  springDamperLower: Point3D;
+  pushrodWheelEnd: Point3D;
+  pushrodRockerEnd: Point3D;
   wheelCenter: Point3D;
   contactPatch: Point3D;
-  springWheelSide: Point3D;
-  springBodySide: Point3D;
 }
 
 export interface VehicleParams {
@@ -28,30 +30,54 @@ export interface VehicleParams {
   dampingCoefficient: number;
   rideHeight: number;
   tireRadius: number;
+  cgHeight: number;
+  frontBrakeProportion: number;
 }
 
 export interface GeometryResult {
   instantCenter: Point3D;
   rollCenterHeight: number;
-  kpiAngle: number;
-  casterAngle: number;
+  kingpinInclinationDegrees: number;
+  casterAngleDegrees: number;
   scrubRadius: number;
   mechanicalTrail: number;
 }
 
+export interface DynamicsResult {
+  motionRatio: number;
+  wheelRate: number;
+  naturalFrequency: number;
+  dampingRatio: number;
+  criticalDamping: number;
+}
+
 export interface CamberCurvePoint {
-  travel: number;
-  camberAngle: number;
+  wheelTravel: number;
+  camberAngleDegrees: number;
 }
 
 export interface RollCenterPoint {
-  rollAngle: number;
+  rollAngleDegrees: number;
   rollCenterHeight: number;
 }
 
-export interface MotionRatioPoint {
-  travel: number;
-  motionRatio: number;
+export interface BumpSteerPoint {
+  wheelTravel: number;
+  toeAngleDegrees: number;
+}
+
+export interface AntiGeometryResult {
+  antiDivePercent: number;
+  antiSquatPercent: number;
+}
+
+export interface AckermannPoint {
+  steeringAngleDegrees: number;
+  ackermannPercent: number;
+}
+
+export interface SteeringResult {
+  ackermannCurve: AckermannPoint[];
 }
 
 export interface DesignData {
@@ -81,4 +107,32 @@ export interface RegisterRequest {
 export interface AuthResponse {
   token: string;
   user: AuthUser;
+}
+
+export interface SuspensionDesignPayload {
+  name: string;
+  suspensionType: number;
+  axlePosition: number;
+  upperWishboneFrontPivot: Point3D;
+  upperWishboneRearPivot: Point3D;
+  upperBallJoint: Point3D;
+  lowerWishboneFrontPivot: Point3D;
+  lowerWishboneRearPivot: Point3D;
+  lowerBallJoint: Point3D;
+  tieRodInner: Point3D;
+  tieRodOuter: Point3D;
+  springDamperUpper: Point3D;
+  springDamperLower: Point3D;
+  pushrodWheelEnd: Point3D;
+  pushrodRockerEnd: Point3D;
+  trackWidth: number;
+  wheelbase: number;
+  sprungMass: number;
+  unsprungMass: number;
+  springRate: number;
+  dampingCoefficient: number;
+  rideHeight: number;
+  tireRadius: number;
+  cgHeight: number;
+  frontBrakeProportion: number;
 }
