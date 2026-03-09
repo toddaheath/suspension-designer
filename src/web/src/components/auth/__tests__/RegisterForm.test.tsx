@@ -82,14 +82,14 @@ describe('RegisterForm', () => {
       target: { value: 'jane@example.com' },
     });
     fireEvent.change(screen.getByLabelText('Password'), {
-      target: { value: 'password123' },
+      target: { value: 'Password1' },
     });
     fireEvent.submit(screen.getByRole('button', { name: 'Register' }));
 
     expect(mockRegister).toHaveBeenCalledWith({
       name: 'Jane Doe',
       email: 'jane@example.com',
-      password: 'password123',
+      password: 'Password1',
     });
   });
 

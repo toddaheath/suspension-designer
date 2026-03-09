@@ -2,6 +2,7 @@ using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using SuspensionDesigner.Application.Commands;
 using SuspensionDesigner.Application.DTOs;
 using SuspensionDesigner.Application.Handlers;
@@ -12,6 +13,7 @@ namespace SuspensionDesigner.API.Controllers;
 [ApiController]
 [Route("api/v1/designs")]
 [Authorize]
+[EnableRateLimiting("designs")]
 public class DesignsController : ControllerBase
 {
     private readonly IMediator _mediator;
