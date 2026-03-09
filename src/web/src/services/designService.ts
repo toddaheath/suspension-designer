@@ -1,5 +1,6 @@
 import apiClient from './apiClient';
-import type { DoubleWishboneHardpoints, VehicleParams, SuspensionDesignPayload } from '../types/suspension';
+import { buildPayload } from './buildPayload';
+import type { DoubleWishboneHardpoints, VehicleParams } from '../types/suspension';
 
 export interface DesignSummary {
   id: string;
@@ -51,33 +52,7 @@ export async function createDesign(
   hardpoints: DoubleWishboneHardpoints,
   vehicleParams: VehicleParams
 ): Promise<DesignDetail> {
-  const payload: SuspensionDesignPayload = {
-    name,
-    suspensionType: 0,
-    axlePosition: 0,
-    upperWishboneFrontPivot: hardpoints.upperWishboneFrontPivot,
-    upperWishboneRearPivot: hardpoints.upperWishboneRearPivot,
-    upperBallJoint: hardpoints.upperBallJoint,
-    lowerWishboneFrontPivot: hardpoints.lowerWishboneFrontPivot,
-    lowerWishboneRearPivot: hardpoints.lowerWishboneRearPivot,
-    lowerBallJoint: hardpoints.lowerBallJoint,
-    tieRodInner: hardpoints.tieRodInner,
-    tieRodOuter: hardpoints.tieRodOuter,
-    springDamperUpper: hardpoints.springDamperUpper,
-    springDamperLower: hardpoints.springDamperLower,
-    pushrodWheelEnd: hardpoints.pushrodWheelEnd,
-    pushrodRockerEnd: hardpoints.pushrodRockerEnd,
-    trackWidth: vehicleParams.trackWidth,
-    wheelbase: vehicleParams.wheelbase,
-    sprungMass: vehicleParams.sprungMass,
-    unsprungMass: vehicleParams.unsprungMass,
-    springRate: vehicleParams.springRate,
-    dampingCoefficient: vehicleParams.dampingCoefficient,
-    rideHeight: vehicleParams.rideHeight,
-    tireRadius: vehicleParams.tireRadius,
-    cgHeight: vehicleParams.cgHeight,
-    frontBrakeProportion: vehicleParams.frontBrakeProportion,
-  };
+  const payload = buildPayload(hardpoints, vehicleParams, name);
   const response = await apiClient.post<DesignDetail>('/designs', payload);
   return response.data;
 }
@@ -88,33 +63,7 @@ export async function updateDesign(
   hardpoints: DoubleWishboneHardpoints,
   vehicleParams: VehicleParams
 ): Promise<DesignDetail> {
-  const payload: SuspensionDesignPayload = {
-    name,
-    suspensionType: 0,
-    axlePosition: 0,
-    upperWishboneFrontPivot: hardpoints.upperWishboneFrontPivot,
-    upperWishboneRearPivot: hardpoints.upperWishboneRearPivot,
-    upperBallJoint: hardpoints.upperBallJoint,
-    lowerWishboneFrontPivot: hardpoints.lowerWishboneFrontPivot,
-    lowerWishboneRearPivot: hardpoints.lowerWishboneRearPivot,
-    lowerBallJoint: hardpoints.lowerBallJoint,
-    tieRodInner: hardpoints.tieRodInner,
-    tieRodOuter: hardpoints.tieRodOuter,
-    springDamperUpper: hardpoints.springDamperUpper,
-    springDamperLower: hardpoints.springDamperLower,
-    pushrodWheelEnd: hardpoints.pushrodWheelEnd,
-    pushrodRockerEnd: hardpoints.pushrodRockerEnd,
-    trackWidth: vehicleParams.trackWidth,
-    wheelbase: vehicleParams.wheelbase,
-    sprungMass: vehicleParams.sprungMass,
-    unsprungMass: vehicleParams.unsprungMass,
-    springRate: vehicleParams.springRate,
-    dampingCoefficient: vehicleParams.dampingCoefficient,
-    rideHeight: vehicleParams.rideHeight,
-    tireRadius: vehicleParams.tireRadius,
-    cgHeight: vehicleParams.cgHeight,
-    frontBrakeProportion: vehicleParams.frontBrakeProportion,
-  };
+  const payload = buildPayload(hardpoints, vehicleParams, name);
   const response = await apiClient.put<DesignDetail>(`/designs/${id}`, payload);
   return response.data;
 }

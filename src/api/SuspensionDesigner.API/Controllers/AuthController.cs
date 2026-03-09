@@ -1,5 +1,7 @@
 using System.Security.Cryptography;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using SuspensionDesigner.Core.Entities;
 using SuspensionDesigner.Infrastructure.Data;
@@ -9,6 +11,7 @@ namespace SuspensionDesigner.API.Controllers;
 
 [ApiController]
 [Route("api/v1/auth")]
+[EnableRateLimiting("auth")]
 public class AuthController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
