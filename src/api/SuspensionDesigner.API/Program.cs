@@ -24,6 +24,9 @@ var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "default-dev-secret-key-a
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "SuspensionDesigner";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "SuspensionDesigner";
 
+if (!builder.Environment.IsDevelopment() && jwtSecret == "default-dev-secret-key-at-least-32-chars!!")
+    throw new InvalidOperationException("Jwt:Secret must be configured in non-Development environments.");
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -99,6 +102,12 @@ builder.Services.AddRateLimiter(options =>
         opt.Window = TimeSpan.FromMinutes(1);
         opt.QueueLimit = 5;
         opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+    });
+    options.AddFixedWindowLimiter("auth", opt =>
+    {
+        opt.PermitLimit = 5;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 0;
     });
 });
 

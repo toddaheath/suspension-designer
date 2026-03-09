@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using SuspensionDesigner.Application.Commands;
 using SuspensionDesigner.Application.DTOs;
 using SuspensionDesigner.Application.Handlers;
+using SuspensionDesigner.Core.Interfaces;
 
 namespace SuspensionDesigner.API.Controllers;
 
@@ -14,34 +15,39 @@ namespace SuspensionDesigner.API.Controllers;
 public class DesignsController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly ISuspensionDesignRepository _repository;
 
-    public DesignsController(IMediator mediator)
+    public DesignsController(IMediator mediator, ISuspensionDesignRepository repository)
     {
         _mediator = mediator;
+        _repository = repository;
     }
+
+    private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "";
 
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<SuspensionDesignDto>>> List(CancellationToken ct)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "";
-        var result = await _mediator.Send(new ListDesignsRequest(userId), ct);
+        var result = await _mediator.Send(new ListDesignsRequest(GetUserId()), ct);
         return Ok(result);
     }
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<SuspensionDesignDto>> Get(Guid id, CancellationToken ct)
     {
+        var design = await _repository.GetByIdAsync(id, ct);
+        if (design is null) return NotFound();
+        if (design.UserId != GetUserId()) return Forbid();
+
         var result = await _mediator.Send(new GetDesignRequest(id), ct);
-        if (result is null) return NotFound();
-        return Ok(result);
+        return Ok(result!);
     }
 
     [HttpPost]
     public async Task<ActionResult<SuspensionDesignDto>> Create(
         [FromBody] CreateDesignCommand command, CancellationToken ct)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "";
-        var cmd = command with { UserId = userId };
+        var cmd = command with { UserId = GetUserId() };
         var result = await _mediator.Send(cmd, ct);
         return CreatedAtAction(nameof(Get), new { id = result.Id }, result);
     }
@@ -50,17 +56,23 @@ public class DesignsController : ControllerBase
     public async Task<ActionResult<SuspensionDesignDto>> Update(
         Guid id, [FromBody] UpdateDesignCommand command, CancellationToken ct)
     {
+        var design = await _repository.GetByIdAsync(id, ct);
+        if (design is null) return NotFound();
+        if (design.UserId != GetUserId()) return Forbid();
+
         var cmd = command with { Id = id };
         var result = await _mediator.Send(cmd, ct);
-        if (result is null) return NotFound();
-        return Ok(result);
+        return Ok(result!);
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
-        var result = await _mediator.Send(new DeleteDesignRequest(id), ct);
-        if (!result) return NotFound();
+        var design = await _repository.GetByIdAsync(id, ct);
+        if (design is null) return NotFound();
+        if (design.UserId != GetUserId()) return Forbid();
+
+        await _mediator.Send(new DeleteDesignRequest(id), ct);
         return NoContent();
     }
 }
