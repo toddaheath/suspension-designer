@@ -10,15 +10,7 @@ import type {
   AntiGeometryResult,
   SteeringResult,
 } from '../types/suspension';
-import {
-  calculateGeometry,
-  calculateCamberCurve,
-  calculateRollCenter,
-  calculateDynamics,
-  calculateBumpSteer,
-  calculateAntiGeometry,
-  calculateSteering,
-} from '../services/calculationService';
+import { calculateSweep } from '../services/calculationService';
 
 interface CalculationState {
   geometryResult: GeometryResult | null;
@@ -47,24 +39,15 @@ export const useCalculationStore = create<CalculationState>((set) => ({
   fetchAll: async (hardpoints, params) => {
     set({ isLoading: true, error: null });
     try {
-      const [geometry, camber, rollCenter, dynamics, bumpSteer, antiGeo, steering] =
-        await Promise.all([
-          calculateGeometry(hardpoints, params),
-          calculateCamberCurve(hardpoints, params),
-          calculateRollCenter(hardpoints, params),
-          calculateDynamics(hardpoints, params),
-          calculateBumpSteer(hardpoints, params),
-          calculateAntiGeometry(hardpoints, params),
-          calculateSteering(hardpoints, params),
-        ]);
+      const sweep = await calculateSweep(hardpoints, params);
       set({
-        geometryResult: geometry,
-        camberCurve: camber,
-        rollCenterCurve: rollCenter,
-        dynamicsResult: dynamics,
-        bumpSteerCurve: bumpSteer,
-        antiGeometryResult: antiGeo,
-        steeringResult: steering,
+        geometryResult: sweep.geometry,
+        camberCurve: sweep.camberCurve,
+        rollCenterCurve: sweep.rollCenterMigration,
+        dynamicsResult: sweep.dynamics,
+        bumpSteerCurve: sweep.bumpSteer,
+        antiGeometryResult: sweep.antiGeometry,
+        steeringResult: sweep.steering,
         isLoading: false,
       });
     } catch (err: unknown) {

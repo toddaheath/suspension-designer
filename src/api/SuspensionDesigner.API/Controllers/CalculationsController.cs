@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using SuspensionDesigner.Application.DTOs;
 using SuspensionDesigner.Application.Handlers;
 
@@ -7,6 +8,7 @@ namespace SuspensionDesigner.API.Controllers;
 
 [ApiController]
 [Route("api/v1/calculations")]
+[EnableRateLimiting("calculations")]
 public class CalculationsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -76,14 +78,23 @@ public class CalculationsController : ControllerBase
     public async Task<ActionResult<SweepResultDto>> CalculateSweep(
         [FromBody] SuspensionDesignDto design, CancellationToken ct)
     {
-        var geometry = await _mediator.Send(new CalculateGeometryRequest(design), ct);
-        var camberCurve = await _mediator.Send(new CalculateCamberCurveRequest(design), ct);
-        var rollCenter = await _mediator.Send(new CalculateRollCenterRequest(design), ct);
-        var dynamics = await _mediator.Send(new CalculateDynamicsRequest(design), ct);
-        var antiGeometry = await _mediator.Send(new CalculateAntiGeometryRequest(design), ct);
-        var steering = await _mediator.Send(new CalculateSteeringRequest(design), ct);
-        var bumpSteer = await _mediator.Send(new CalculateBumpSteerRequest(design), ct);
+        var geometryTask = _mediator.Send(new CalculateGeometryRequest(design), ct);
+        var camberCurveTask = _mediator.Send(new CalculateCamberCurveRequest(design), ct);
+        var rollCenterTask = _mediator.Send(new CalculateRollCenterRequest(design), ct);
+        var dynamicsTask = _mediator.Send(new CalculateDynamicsRequest(design), ct);
+        var antiGeometryTask = _mediator.Send(new CalculateAntiGeometryRequest(design), ct);
+        var steeringTask = _mediator.Send(new CalculateSteeringRequest(design), ct);
+        var bumpSteerTask = _mediator.Send(new CalculateBumpSteerRequest(design), ct);
 
-        return Ok(new SweepResultDto(geometry, camberCurve, rollCenter, dynamics, antiGeometry, steering, bumpSteer));
+        await Task.WhenAll(geometryTask, camberCurveTask, rollCenterTask, dynamicsTask, antiGeometryTask, steeringTask, bumpSteerTask);
+
+        return Ok(new SweepResultDto(
+            geometryTask.Result,
+            camberCurveTask.Result,
+            rollCenterTask.Result,
+            dynamicsTask.Result,
+            antiGeometryTask.Result,
+            steeringTask.Result,
+            bumpSteerTask.Result));
     }
 }

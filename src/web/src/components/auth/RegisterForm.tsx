@@ -28,8 +28,9 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
       )}
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Name</label>
+          <label htmlFor="register-name" className="block text-xs text-gray-400 mb-1">Name</label>
           <input
+            id="register-name"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -38,8 +39,9 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Email</label>
+          <label htmlFor="register-email" className="block text-xs text-gray-400 mb-1">Email</label>
           <input
+            id="register-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -48,8 +50,9 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Password</label>
+          <label htmlFor="register-password" className="block text-xs text-gray-400 mb-1">Password</label>
           <input
+            id="register-password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

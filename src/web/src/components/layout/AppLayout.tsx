@@ -32,7 +32,9 @@ export default function AppLayout() {
         <div className="flex items-center gap-3">
           <button
             onClick={toggleSidebar}
-            className="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded border border-gray-700"
+            aria-pressed={sidebarVisible}
+            aria-label="Toggle parameter sidebar"
+            className="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded border border-gray-700 focus:ring-1 focus:ring-blue-500 focus:outline-none"
           >
             {sidebarVisible ? 'Hide' : 'Show'} Params
           </button>
@@ -73,7 +75,9 @@ export default function AppLayout() {
           )}
           <button
             onClick={toggleResults}
-            className="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded border border-gray-700"
+            aria-pressed={resultsVisible}
+            aria-label="Toggle results panel"
+            className="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded border border-gray-700 focus:ring-1 focus:ring-blue-500 focus:outline-none"
           >
             {resultsVisible ? 'Hide' : 'Show'} Results
           </button>

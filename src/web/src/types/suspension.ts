@@ -80,6 +80,16 @@ export interface SteeringResult {
   ackermannCurve: AckermannPoint[];
 }
 
+export interface SweepResult {
+  geometry: GeometryResult;
+  camberCurve: CamberCurvePoint[];
+  rollCenterMigration: RollCenterPoint[];
+  dynamics: DynamicsResult;
+  antiGeometry: AntiGeometryResult;
+  steering: SteeringResult;
+  bumpSteer: BumpSteerPoint[];
+}
+
 export interface DesignData {
   id?: string;
   name: string;

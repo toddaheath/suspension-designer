@@ -1,9 +1,10 @@
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import AppLayout from './components/layout/AppLayout';
 import LoginForm from './components/auth/LoginForm';
 import RegisterForm from './components/auth/RegisterForm';
 import ErrorBoundary from './components/ErrorBoundary';
+import NotificationToast from './components/NotificationToast';
 import { useAuthStore } from './stores/authStore';
 import { useCalculation } from './hooks/useCalculation';
 
@@ -29,6 +30,19 @@ function AuthPage() {
   );
 }
 
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const token = useAuthStore((s) => s.token);
+
+  // Allow access if authenticated OR if no token exists (anonymous usage)
+  // Only redirect if user had a token that got invalidated
+  if (!isAuthenticated && token === null && localStorage.getItem('auth_token')) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 function AppWithCalculation() {
   useCalculation();
   return <AppLayout />;
@@ -48,10 +62,18 @@ function App() {
       <BrowserRouter>
         <AuthInitializer>
           <Routes>
-            <Route path="/" element={<AppWithCalculation />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <AppWithCalculation />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/login" element={<AuthPage />} />
             <Route path="/register" element={<AuthPage />} />
           </Routes>
+          <NotificationToast />
         </AuthInitializer>
       </BrowserRouter>
     </ErrorBoundary>

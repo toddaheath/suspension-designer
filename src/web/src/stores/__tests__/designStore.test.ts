@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { VEHICLE_PRESETS } from '../../data/vehiclePresets';
 import { useDesignStore } from '../designStore';
 
 describe('useDesignStore', () => {
@@ -119,6 +120,190 @@ describe('useDesignStore', () => {
       expect(store.getState().name).toBe('Untitled Design');
       expect(store.getState().designId).toBeNull();
       expect(store.getState().isDirty).toBe(false);
+    });
+  });
+
+  describe('undo/redo', () => {
+    it('canUndo is false initially after a fresh reset with no modifications', () => {
+      const store = useDesignStore;
+      // Drain any leftover undo entries from prior tests
+      while (store.getState().canUndo) {
+        store.getState().undo();
+      }
+      // Drain redo stack too
+      while (store.getState().canRedo) {
+        store.getState().redo();
+      }
+      while (store.getState().canUndo) {
+        store.getState().undo();
+      }
+      expect(store.getState().canUndo).toBe(false);
+    });
+
+    it('canUndo becomes true after updateHardpoint', () => {
+      const store = useDesignStore;
+      store.getState().updateHardpoint('upperBallJoint', 'x', 42);
+      expect(store.getState().canUndo).toBe(true);
+    });
+
+    it('undo restores the previous hardpoint value', () => {
+      const store = useDesignStore;
+      const originalX = store.getState().hardpoints.upperBallJoint.x;
+
+      store.getState().updateHardpoint('upperBallJoint', 'x', 777);
+      expect(store.getState().hardpoints.upperBallJoint.x).toBe(777);
+
+      store.getState().undo();
+      expect(store.getState().hardpoints.upperBallJoint.x).toBe(originalX);
+    });
+
+    it('canRedo becomes true after undo', () => {
+      const store = useDesignStore;
+      store.getState().updateHardpoint('lowerBallJoint', 'y', 555);
+      store.getState().undo();
+      expect(store.getState().canRedo).toBe(true);
+    });
+
+    it('redo restores the value again after undo', () => {
+      const store = useDesignStore;
+      store.getState().updateHardpoint('upperBallJoint', 'z', 123);
+      store.getState().undo();
+      store.getState().redo();
+      expect(store.getState().hardpoints.upperBallJoint.z).toBe(123);
+    });
+
+    it('undo with empty stack does nothing', () => {
+      const store = useDesignStore;
+      // Drain any leftover undo entries
+      while (store.getState().canUndo) {
+        store.getState().undo();
+      }
+      // Drain redo too
+      while (store.getState().canRedo) {
+        store.getState().redo();
+      }
+      while (store.getState().canUndo) {
+        store.getState().undo();
+      }
+
+      const stateBefore = {
+        hardpoints: JSON.parse(JSON.stringify(store.getState().hardpoints)),
+        vehicleParams: JSON.parse(JSON.stringify(store.getState().vehicleParams)),
+      };
+
+      store.getState().undo();
+
+      expect(JSON.parse(JSON.stringify(store.getState().hardpoints))).toEqual(stateBefore.hardpoints);
+      expect(JSON.parse(JSON.stringify(store.getState().vehicleParams))).toEqual(stateBefore.vehicleParams);
+    });
+  });
+
+  describe('setName', () => {
+    it('changes the name', () => {
+      const store = useDesignStore;
+      store.getState().setName('My Custom Design');
+      expect(store.getState().name).toBe('My Custom Design');
+    });
+
+    it('sets isDirty to true', () => {
+      const store = useDesignStore;
+      expect(store.getState().isDirty).toBe(false);
+      store.getState().setName('New Name');
+      expect(store.getState().isDirty).toBe(true);
+    });
+  });
+
+  describe('applyPreset', () => {
+    it('updates hardpoints and vehicleParams from preset', () => {
+      const store = useDesignStore;
+      const preset = VEHICLE_PRESETS[0]; // FSAE
+
+      store.getState().applyPreset(preset);
+
+      expect(store.getState().hardpoints.upperBallJoint).toEqual(preset.hardpoints.upperBallJoint);
+      expect(store.getState().hardpoints.lowerBallJoint).toEqual(preset.hardpoints.lowerBallJoint);
+      expect(store.getState().vehicleParams.trackWidth).toBe(preset.vehicleParams.trackWidth);
+      expect(store.getState().vehicleParams.springRate).toBe(preset.vehicleParams.springRate);
+      expect(store.getState().vehicleParams.tireRadius).toBe(preset.vehicleParams.tireRadius);
+    });
+
+    it('sets isDirty to true', () => {
+      const store = useDesignStore;
+      expect(store.getState().isDirty).toBe(false);
+
+      store.getState().applyPreset(VEHICLE_PRESETS[0]);
+      expect(store.getState().isDirty).toBe(true);
+    });
+
+    it('sets designId to null', () => {
+      const store = useDesignStore;
+      store.getState().applyPreset(VEHICLE_PRESETS[0]);
+      expect(store.getState().designId).toBeNull();
+    });
+
+    it('sets name to preset name', () => {
+      const store = useDesignStore;
+      const preset = VEHICLE_PRESETS[1]; // Road Sport Car
+
+      store.getState().applyPreset(preset);
+      expect(store.getState().name).toBe(preset.name);
+    });
+  });
+
+  describe('exportToJson / importFromJson', () => {
+    it('exportToJson returns valid JSON with name, hardpoints, vehicleParams', () => {
+      const store = useDesignStore;
+      store.getState().setName('Export Test');
+
+      const json = store.getState().exportToJson();
+      const parsed = JSON.parse(json);
+
+      expect(parsed).toHaveProperty('name', 'Export Test');
+      expect(parsed).toHaveProperty('hardpoints');
+      expect(parsed).toHaveProperty('vehicleParams');
+      expect(parsed.hardpoints).toHaveProperty('upperBallJoint');
+      expect(parsed.vehicleParams).toHaveProperty('trackWidth');
+    });
+
+    it('importFromJson with valid JSON updates the store', () => {
+      const store = useDesignStore;
+
+      // First export a known state
+      store.getState().setName('Original');
+      store.getState().updateHardpoint('upperBallJoint', 'x', 42);
+      const json = store.getState().exportToJson();
+
+      // Reset to defaults so store is different
+      store.getState().resetToDefaults();
+      expect(store.getState().hardpoints.upperBallJoint.x).not.toBe(42);
+
+      // Import the saved JSON
+      const result = store.getState().importFromJson(json);
+
+      expect(result).toBe(true);
+      expect(store.getState().name).toBe('Original');
+      expect(store.getState().hardpoints.upperBallJoint.x).toBe(42);
+      expect(store.getState().isDirty).toBe(true);
+      expect(store.getState().designId).toBeNull();
+    });
+
+    it('importFromJson with invalid JSON returns false', () => {
+      const store = useDesignStore;
+      const result = store.getState().importFromJson('not valid json {{{');
+      expect(result).toBe(false);
+    });
+
+    it('importFromJson with missing hardpoints returns false', () => {
+      const store = useDesignStore;
+      const json = JSON.stringify({ name: 'No hardpoints', vehicleParams: {} });
+      // The store checks !data.hardpoints — an empty object is truthy, but
+      // a payload with hardpoints explicitly absent should fail.
+      const jsonMissing = JSON.stringify({ name: 'Missing', vehicleParams: { trackWidth: 1200 } });
+      // Remove hardpoints key entirely
+      const obj = JSON.parse(jsonMissing);
+      delete obj.hardpoints;
+      const result = store.getState().importFromJson(JSON.stringify(obj));
+      expect(result).toBe(false);
     });
   });
 });

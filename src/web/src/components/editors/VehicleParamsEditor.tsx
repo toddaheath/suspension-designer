@@ -28,17 +28,18 @@ export default function VehicleParamsEditor() {
     <ParameterGroup title="Vehicle Parameters">
       {PARAM_DEFS.map((def) => (
         <div key={def.key} className="flex items-center gap-2 mb-1">
-          <label className="text-xs text-gray-400 w-28 shrink-0">
+          <label htmlFor={`vp-${def.key}`} className="text-xs text-gray-400 w-28 shrink-0">
             {def.label}
           </label>
           <input
+            id={`vp-${def.key}`}
             type="number"
             value={vehicleParams[def.key]}
             onChange={(e) =>
               updateVehicleParam(def.key, parseFloat(e.target.value) || 0)
             }
             step={def.step}
-            className="flex-1 bg-gray-800 border border-gray-600 rounded px-2 py-0.5 text-xs text-gray-200 focus:border-blue-500 focus:outline-none"
+            className="flex-1 bg-gray-800 border border-gray-600 rounded px-2 py-0.5 text-xs text-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
           />
           <span className="text-xs text-gray-500 w-10">{def.unit}</span>
         </div>
