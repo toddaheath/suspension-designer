@@ -1,4 +1,6 @@
+using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -23,15 +25,28 @@ public class AuthController : ControllerBase
         _tokenService = tokenService;
     }
 
-    public record RegisterRequest(string Email, string Name, string Password);
-    public record LoginRequest(string Email, string Password);
+    public record RegisterRequest(
+        [Required][EmailAddress] string Email,
+        [Required][MinLength(1)] string Name,
+        [Required][MinLength(8)] string Password);
+    public record LoginRequest(
+        [Required][EmailAddress] string Email,
+        [Required] string Password);
     public record AuthUserResponse(string Id, string Email, string Name);
     public record AuthResponse(string Token, AuthUserResponse User);
+
+    private static readonly Regex UpperCase = new("[A-Z]", RegexOptions.Compiled);
+    private static readonly Regex LowerCase = new("[a-z]", RegexOptions.Compiled);
+    private static readonly Regex Digit = new("[0-9]", RegexOptions.Compiled);
 
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponse>> Register(
         [FromBody] RegisterRequest request, CancellationToken ct)
     {
+        if (request.Password.Length < 8 || !UpperCase.IsMatch(request.Password) ||
+            !LowerCase.IsMatch(request.Password) || !Digit.IsMatch(request.Password))
+            return BadRequest(new { message = "Password must be at least 8 characters with uppercase, lowercase, and a number" });
+
         var exists = await _context.Users.AnyAsync(u => u.Email == request.Email, ct);
         if (exists)
             return Conflict(new { message = "Email already registered" });

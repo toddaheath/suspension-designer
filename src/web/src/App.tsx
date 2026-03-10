@@ -6,6 +6,7 @@ import RegisterForm from './components/auth/RegisterForm';
 import ErrorBoundary from './components/ErrorBoundary';
 import NotificationToast from './components/NotificationToast';
 import { useAuthStore } from './stores/authStore';
+import { useDesignStore } from './stores/designStore';
 import { useCalculation } from './hooks/useCalculation';
 
 function AuthPage() {
@@ -43,8 +44,22 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function useUnsavedChangesWarning() {
+  const isDirty = useDesignStore((s) => s.isDirty);
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [isDirty]);
+}
+
 function AppWithCalculation() {
   useCalculation();
+  useUnsavedChangesWarning();
   return <AppLayout />;
 }
 
