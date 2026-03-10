@@ -1,12 +1,18 @@
+import { useState } from 'react';
 import { useCalculationStore } from '../../stores/calculationStore';
+import { exportResultsCsv, downloadCsv } from '../../services/exportService';
 
 export default function GeometryResultsPanel() {
   const geometry = useCalculationStore((s) => s.geometryResult);
   const dynamics = useCalculationStore((s) => s.dynamicsResult);
   const antiGeo = useCalculationStore((s) => s.antiGeometryResult);
   const steering = useCalculationStore((s) => s.steeringResult);
+  const camberCurve = useCalculationStore((s) => s.camberCurve);
+  const rollCenterCurve = useCalculationStore((s) => s.rollCenterCurve);
+  const bumpSteerCurve = useCalculationStore((s) => s.bumpSteerCurve);
   const isLoading = useCalculationStore((s) => s.isLoading);
   const error = useCalculationStore((s) => s.error);
+  const [copied, setCopied] = useState(false);
 
   if (isLoading) {
     return (
@@ -119,8 +125,43 @@ export default function GeometryResultsPanel() {
         }))
       : [];
 
+  const hasResults = geometryRows.length > 0 || dynamicsRows.length > 0;
+
+  const handleCopyAll = () => {
+    const allRows = [...geometryRows, ...dynamicsRows, ...antiGeoRows];
+    const text = allRows.map((r) => `${r.label}: ${r.value} ${r.unit}`).join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const handleExportCsv = () => {
+    const csv = exportResultsCsv({
+      geometry, dynamics, antiGeometry: antiGeo, steering,
+      camberCurve, rollCenterCurve, bumpSteerCurve,
+    });
+    downloadCsv(csv, 'suspension-results.csv');
+  };
+
   return (
     <div className="p-3">
+      {hasResults && (
+        <div className="flex gap-1 mb-3">
+          <button
+            onClick={handleCopyAll}
+            className="px-2 py-1 text-[10px] bg-gray-800 hover:bg-gray-700 rounded border border-gray-700 text-gray-300"
+          >
+            {copied ? 'Copied!' : 'Copy'}
+          </button>
+          <button
+            onClick={handleExportCsv}
+            className="px-2 py-1 text-[10px] bg-gray-800 hover:bg-gray-700 rounded border border-gray-700 text-gray-300"
+          >
+            Export CSV
+          </button>
+        </div>
+      )}
       {geometryRows.length > 0 && (
         <>
           <h3 className="text-sm font-semibold text-gray-300 mb-3">

@@ -193,6 +193,27 @@ export const useDesignStore = create<DesignState>()(
       try {
         const data = JSON.parse(json) as DesignData;
         if (!data.hardpoints || !data.vehicleParams) return false;
+
+        // Validate required hardpoint keys exist and have x/y/z
+        const requiredHardpoints: (keyof DoubleWishboneHardpoints)[] = [
+          'upperWishboneFrontPivot', 'upperWishboneRearPivot', 'upperBallJoint',
+          'lowerWishboneFrontPivot', 'lowerWishboneRearPivot', 'lowerBallJoint',
+          'tieRodInner', 'tieRodOuter', 'springDamperUpper', 'springDamperLower',
+        ];
+        for (const key of requiredHardpoints) {
+          const pt = data.hardpoints[key];
+          if (!pt || typeof pt.x !== 'number' || typeof pt.y !== 'number' || typeof pt.z !== 'number') return false;
+        }
+
+        // Validate required vehicle params
+        const requiredParams: (keyof VehicleParams)[] = [
+          'trackWidth', 'wheelbase', 'sprungMass', 'unsprungMass',
+          'springRate', 'dampingCoefficient', 'tireRadius',
+        ];
+        for (const key of requiredParams) {
+          if (typeof data.vehicleParams[key] !== 'number' || data.vehicleParams[key] <= 0) return false;
+        }
+
         set((state) => {
           state.name = data.name || 'Imported Design';
           state.hardpoints = data.hardpoints;
