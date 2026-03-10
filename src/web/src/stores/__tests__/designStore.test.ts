@@ -305,5 +305,37 @@ describe('useDesignStore', () => {
       const result = store.getState().importFromJson(JSON.stringify(obj));
       expect(result).toBe(false);
     });
+
+    it('importFromJson rejects hardpoint missing x/y/z', () => {
+      const store = useDesignStore;
+      const exported = JSON.parse(store.getState().exportToJson());
+      exported.hardpoints.upperBallJoint = { x: 1 }; // missing y, z
+      const result = store.getState().importFromJson(JSON.stringify(exported));
+      expect(result).toBe(false);
+    });
+
+    it('importFromJson rejects non-numeric hardpoint coordinates', () => {
+      const store = useDesignStore;
+      const exported = JSON.parse(store.getState().exportToJson());
+      exported.hardpoints.lowerBallJoint = { x: 'bad', y: 0, z: 0 };
+      const result = store.getState().importFromJson(JSON.stringify(exported));
+      expect(result).toBe(false);
+    });
+
+    it('importFromJson rejects zero or negative trackWidth', () => {
+      const store = useDesignStore;
+      const exported = JSON.parse(store.getState().exportToJson());
+      exported.vehicleParams.trackWidth = 0;
+      const result = store.getState().importFromJson(JSON.stringify(exported));
+      expect(result).toBe(false);
+    });
+
+    it('importFromJson rejects missing springRate', () => {
+      const store = useDesignStore;
+      const exported = JSON.parse(store.getState().exportToJson());
+      delete exported.vehicleParams.springRate;
+      const result = store.getState().importFromJson(JSON.stringify(exported));
+      expect(result).toBe(false);
+    });
   });
 });
