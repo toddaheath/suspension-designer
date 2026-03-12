@@ -84,6 +84,6 @@ describe('VehicleParamsEditor', () => {
 
     expect(screen.getAllByText('kg').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('N/mm')).toBeInTheDocument();
-    expect(screen.getByText('Ns/m')).toBeInTheDocument();
+    expect(screen.getByText('N·s/mm')).toBeInTheDocument();
   });
 });

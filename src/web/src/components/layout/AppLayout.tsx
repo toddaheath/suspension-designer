@@ -16,6 +16,7 @@ import ChartPanel from '../charts/ChartPanel';
 import GeometryResultsPanel from '../results/GeometryResultsPanel';
 import ComparisonPanel from '../analysis/ComparisonPanel';
 import KeyboardShortcutsModal from '../KeyboardShortcutsModal';
+import { useUnitStore } from '../../stores/unitStore';
 import { generateReportHtml, openReport } from '../../services/reportService';
 
 const isDemo = import.meta.env.VITE_DEMO_MODE === 'true';
@@ -33,6 +34,8 @@ export default function AppLayout() {
   const isCalculating = useCalculationStore((s) => s.isLoading);
   const calcError = useCalculationStore((s) => s.error);
   const navigate = useNavigate();
+  const unitSystem = useUnitStore((s) => s.system);
+  const toggleUnits = useUnitStore((s) => s.toggle);
 
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
@@ -79,58 +82,69 @@ export default function AppLayout() {
   return (
     <div className="h-screen flex flex-col bg-gray-950 text-gray-200">
       {/* Header */}
-      <header className="flex items-center justify-between px-4 py-2 bg-[#1a1a2e] border-b border-gray-800 shrink-0">
-        <div className="flex items-center gap-3">
+      <header className="flex items-center justify-between px-2 sm:px-4 py-2 bg-[#1a1a2e] border-b border-gray-800 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
           <button
             onClick={toggleSidebar}
             aria-pressed={sidebarVisible}
             aria-label="Toggle parameter sidebar"
-            className="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded border border-gray-700 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            className="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded border border-gray-700 focus:ring-1 focus:ring-blue-500 focus:outline-none shrink-0"
           >
-            {sidebarVisible ? 'Hide' : 'Show'} Params
+            <span className="hidden sm:inline">{sidebarVisible ? 'Hide' : 'Show'} Params</span>
+            <span className="sm:hidden">{sidebarVisible ? '\u2190' : '\u2192'}</span>
           </button>
-          <h1 className="text-sm font-bold text-blue-400 tracking-wide uppercase">
+          <h1 className="text-sm font-bold text-blue-400 tracking-wide uppercase hidden md:block shrink-0">
             Suspension Designer
           </h1>
+          <h1 className="text-sm font-bold text-blue-400 tracking-wide uppercase md:hidden shrink-0">
+            SusDes
+          </h1>
           {isDemo && (
-            <span className="px-1.5 py-0.5 text-[10px] bg-yellow-600/20 text-yellow-400 border border-yellow-600/40 rounded">
+            <span className="px-1.5 py-0.5 text-[10px] bg-yellow-600/20 text-yellow-400 border border-yellow-600/40 rounded shrink-0">
               Demo
             </span>
           )}
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-gray-400 truncate min-w-0">
             {designName}
             {isDirty && <span className="text-yellow-400 ml-1">*</span>}
           </span>
           {isCalculating && (
-            <span className="text-xs text-blue-400 animate-pulse">Calculating...</span>
+            <span className="text-xs text-blue-400 animate-pulse shrink-0 hidden sm:inline">Calculating...</span>
           )}
           {calcError && (
-            <span className="text-xs text-red-400" title={calcError}>Calc error</span>
+            <span className="text-xs text-red-400 shrink-0" title={calcError}>Calc error</span>
           )}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1 sm:gap-3 shrink-0">
+          <button
+            onClick={toggleUnits}
+            className="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded border border-gray-700 text-gray-400 hover:text-gray-200"
+            title={`Switch to ${unitSystem === 'metric' ? 'imperial' : 'metric'} units`}
+          >
+            {unitSystem === 'metric' ? 'mm' : 'in'}
+          </button>
           <button
             onClick={handleGenerateReport}
-            className="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded border border-gray-700 text-gray-400 hover:text-gray-200"
+            className="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded border border-gray-700 text-gray-400 hover:text-gray-200 hidden sm:block"
             title="Generate printable report"
           >
             Report
           </button>
           <button
             onClick={() => setShortcutsOpen(true)}
-            className="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded border border-gray-700 text-gray-400 hover:text-gray-200"
+            className="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded border border-gray-700 text-gray-400 hover:text-gray-200 hidden sm:block"
             title="Keyboard shortcuts (?)"
           >
             ?
           </button>
           {isAuthenticated ? (
             <>
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-gray-400 hidden lg:inline">
                 {user?.name || user?.email || 'User'}
               </span>
               <button
                 onClick={logout}
-                className="text-xs text-gray-400 hover:text-gray-200 px-2 py-1 border border-gray-700 rounded"
+                className="text-xs text-gray-400 hover:text-gray-200 px-2 py-1 border border-gray-700 rounded hidden sm:block"
               >
                 Logout
               </button>
@@ -138,7 +152,7 @@ export default function AppLayout() {
           ) : (
             <button
               onClick={() => navigate('/login')}
-              className="text-xs text-blue-400 hover:text-blue-300 px-2 py-1"
+              className="text-xs text-blue-400 hover:text-blue-300 px-2 py-1 hidden sm:block"
             >
               Login
             </button>
@@ -147,18 +161,19 @@ export default function AppLayout() {
             onClick={toggleResults}
             aria-pressed={resultsVisible}
             aria-label="Toggle results panel"
-            className="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded border border-gray-700 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            className="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded border border-gray-700 focus:ring-1 focus:ring-blue-500 focus:outline-none shrink-0"
           >
-            {resultsVisible ? 'Hide' : 'Show'} Results
+            <span className="hidden sm:inline">{resultsVisible ? 'Hide' : 'Show'} Results</span>
+            <span className="sm:hidden">{resultsVisible ? '\u2192' : '\u2190'}</span>
           </button>
         </div>
       </header>
 
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left sidebar */}
+        {/* Left sidebar - overlay on mobile, fixed on desktop */}
         {sidebarVisible && (
-          <aside className="w-[300px] shrink-0 bg-[#1a1a2e] border-r border-gray-800 overflow-y-auto">
+          <aside className="w-[280px] sm:w-[300px] shrink-0 bg-[#1a1a2e] border-r border-gray-800 overflow-y-auto absolute sm:relative z-20 h-[calc(100vh-41px)] sm:h-auto">
             <div className="p-3 space-y-3">
               <DesignToolbar />
               <DesignListPanel />
@@ -171,18 +186,18 @@ export default function AppLayout() {
         )}
 
         {/* Center - 3D Viewer + Charts */}
-        <main className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 flex flex-col overflow-hidden min-w-0">
           <div className="flex-1 min-h-0">
             <SuspensionViewer3D />
           </div>
-          <div className="h-[280px] shrink-0 border-t border-gray-800">
+          <div className="h-[200px] sm:h-[280px] shrink-0 border-t border-gray-800">
             <ChartPanel />
           </div>
         </main>
 
-        {/* Right panel */}
+        {/* Right panel - overlay on mobile, fixed on desktop */}
         {resultsVisible && (
-          <aside className="w-[280px] shrink-0 bg-gray-900 border-l border-gray-800 overflow-y-auto">
+          <aside className="w-[260px] sm:w-[280px] shrink-0 bg-gray-900 border-l border-gray-800 overflow-y-auto absolute sm:relative right-0 z-20 h-[calc(100vh-41px)] sm:h-auto">
             <GeometryResultsPanel />
             <ComparisonPanel />
           </aside>
