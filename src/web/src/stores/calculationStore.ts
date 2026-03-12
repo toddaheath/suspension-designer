@@ -7,6 +7,7 @@ import type {
   CamberCurvePoint,
   RollCenterPoint,
   BumpSteerPoint,
+  MotionRatioPoint,
   AntiGeometryResult,
   SteeringResult,
 } from '../types/suspension';
@@ -23,6 +24,7 @@ interface CalculationState {
   camberCurve: CamberCurvePoint[];
   rollCenterCurve: RollCenterPoint[];
   bumpSteerCurve: BumpSteerPoint[];
+  motionRatioCurve: MotionRatioPoint[];
   isLoading: boolean;
   error: string | null;
   fetchAll: (hardpoints: DoubleWishboneHardpoints, params: VehicleParams) => Promise<void>;
@@ -36,6 +38,7 @@ export const useCalculationStore = create<CalculationState>((set) => ({
   camberCurve: [],
   rollCenterCurve: [],
   bumpSteerCurve: [],
+  motionRatioCurve: [],
   isLoading: false,
   error: null,
 
@@ -53,6 +56,7 @@ export const useCalculationStore = create<CalculationState>((set) => ({
         bumpSteerCurve: sweep.bumpSteer,
         antiGeometryResult: sweep.antiGeometry,
         steeringResult: sweep.steering,
+        motionRatioCurve: sweep.motionRatioCurve ?? [],
         isLoading: false,
       });
     } catch (err: unknown) {

@@ -6,6 +6,7 @@ import type {
   CamberCurvePoint,
   RollCenterPoint,
   BumpSteerPoint,
+  MotionRatioPoint,
   AntiGeometryResult,
   SteeringResult,
   SweepResult,
@@ -176,6 +177,28 @@ function computeMotionRatio(hp: DoubleWishboneHardpoints): number {
   return springChange / delta;
 }
 
+function springLength(hp: DoubleWishboneHardpoints): number {
+  return Math.sqrt(
+    (hp.springDamperUpper.x - hp.springDamperLower.x) ** 2 +
+    (hp.springDamperUpper.y - hp.springDamperLower.y) ** 2 +
+    (hp.springDamperUpper.z - hp.springDamperLower.z) ** 2
+  );
+}
+
+function computeMotionRatioCurve(hp: DoubleWishboneHardpoints): MotionRatioPoint[] {
+  const delta = 0.5; // small perturbation for numerical derivative
+  const points: MotionRatioPoint[] = [];
+  for (let travel = -75; travel <= 75; travel += 5) {
+    const displaced = solveWheelTravel(hp, travel);
+    const displacedPlus = solveWheelTravel(hp, travel + delta);
+    const len1 = springLength(displaced);
+    const len2 = springLength(displacedPlus);
+    const mr = Math.abs(len1 - len2) / delta;
+    points.push({ wheelTravel: travel, motionRatio: mr });
+  }
+  return points;
+}
+
 function computeDynamics(hp: DoubleWishboneHardpoints, vp: VehicleParams): DynamicsResult {
   const motionRatio = computeMotionRatio(hp);
   const wheelRate = (vp.springRate / 1000) * motionRatio * motionRatio; // N/mm
@@ -285,5 +308,6 @@ export function calculateSweepLocal(
     antiGeometry: computeAntiGeometry(hardpoints, vehicleParams),
     steering: computeSteering(vehicleParams),
     bumpSteer: computeBumpSteer(hardpoints),
+    motionRatioCurve: computeMotionRatioCurve(hardpoints),
   };
 }
