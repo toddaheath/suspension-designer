@@ -71,10 +71,12 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+const basename = import.meta.env.VITE_DEMO_MODE === 'true' ? '/suspension-designer' : '/';
+
 function App() {
   return (
     <ErrorBoundary>
-      <BrowserRouter>
+      <BrowserRouter basename={basename}>
         <AuthInitializer>
           <Routes>
             <Route
