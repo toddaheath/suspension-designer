@@ -17,6 +17,8 @@ import GeometryResultsPanel from '../results/GeometryResultsPanel';
 import KeyboardShortcutsModal from '../KeyboardShortcutsModal';
 import { generateReportHtml, openReport } from '../../services/reportService';
 
+const isDemo = import.meta.env.VITE_DEMO_MODE === 'true';
+
 export default function AppLayout() {
   const sidebarVisible = useUIStore((s) => s.sidebarVisible);
   const resultsVisible = useUIStore((s) => s.resultsVisible);
@@ -89,6 +91,11 @@ export default function AppLayout() {
           <h1 className="text-sm font-bold text-blue-400 tracking-wide uppercase">
             Suspension Designer
           </h1>
+          {isDemo && (
+            <span className="px-1.5 py-0.5 text-[10px] bg-yellow-600/20 text-yellow-400 border border-yellow-600/40 rounded">
+              Demo
+            </span>
+          )}
           <span className="text-xs text-gray-400">
             {designName}
             {isDirty && <span className="text-yellow-400 ml-1">*</span>}

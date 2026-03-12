@@ -2,6 +2,9 @@ import { create } from 'zustand';
 import apiClient from '../services/apiClient';
 import type { AuthUser, LoginRequest, RegisterRequest, AuthResponse } from '../types/suspension';
 
+const isDemo = import.meta.env.VITE_DEMO_MODE === 'true';
+const DEMO_USER: AuthUser = { id: 'demo', email: 'demo@example.com', name: 'Demo User' };
+
 interface AuthState {
   user: AuthUser | null;
   token: string | null;
@@ -22,6 +25,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   error: null,
 
   login: async (req) => {
+    if (isDemo) {
+      set({ user: DEMO_USER, token: 'demo', isAuthenticated: true, isLoading: false });
+      return;
+    }
     set({ isLoading: true, error: null });
     try {
       const response = await apiClient.post<AuthResponse>('/auth/login', req);
@@ -36,6 +43,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   register: async (req) => {
+    if (isDemo) {
+      set({ user: DEMO_USER, token: 'demo', isAuthenticated: true, isLoading: false });
+      return;
+    }
     set({ isLoading: true, error: null });
     try {
       const response = await apiClient.post<AuthResponse>('/auth/register', req);
@@ -50,15 +61,21 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: () => {
-    localStorage.removeItem('auth_token');
+    if (!isDemo) {
+      localStorage.removeItem('auth_token');
+    }
     set({ user: null, token: null, isAuthenticated: false });
   },
 
   loadFromStorage: () => {
+    if (isDemo) {
+      // Auto-authenticate in demo mode
+      set({ user: DEMO_USER, token: 'demo', isAuthenticated: true });
+      return;
+    }
     const token = localStorage.getItem('auth_token');
     if (token) {
       set({ token, isAuthenticated: true });
-      // Try to fetch user profile with stored token
       apiClient
         .post<AuthResponse>('/auth/refresh')
         .then((res) => {
@@ -67,7 +84,6 @@ export const useAuthStore = create<AuthState>((set) => ({
           set({ token: newToken, user, isAuthenticated: true });
         })
         .catch(() => {
-          // Token expired or invalid
           localStorage.removeItem('auth_token');
           set({ token: null, user: null, isAuthenticated: false });
         });
