@@ -104,6 +104,8 @@ export default function AppLayout() {
       camberCurve: calcState.camberCurve,
       rollCenterCurve: calcState.rollCenterCurve,
       bumpSteerCurve: calcState.bumpSteerCurve,
+      motionRatioCurve: calcState.motionRatioCurve,
+      wheelRateCurve: calcState.wheelRateCurve,
       targets: targetState.targets,
     });
 

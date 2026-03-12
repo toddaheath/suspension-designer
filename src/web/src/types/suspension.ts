@@ -71,6 +71,17 @@ export interface MotionRatioPoint {
   motionRatio: number;
 }
 
+export interface WheelRatePoint {
+  wheelTravel: number;
+  wheelRate: number;
+}
+
+export interface InstantCenterPoint {
+  wheelTravel: number;
+  icY: number;
+  icZ: number;
+}
+
 export interface AntiGeometryResult {
   antiDivePercent: number;
   antiSquatPercent: number;
@@ -94,6 +105,8 @@ export interface SweepResult {
   steering: SteeringResult;
   bumpSteer: BumpSteerPoint[];
   motionRatioCurve: MotionRatioPoint[];
+  wheelRateCurve: WheelRatePoint[];
+  instantCenterCurve: InstantCenterPoint[];
 }
 
 export interface DesignData {

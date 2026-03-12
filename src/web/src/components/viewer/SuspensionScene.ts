@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import type { DoubleWishboneHardpoints } from '../../types/suspension';
+import type { DoubleWishboneHardpoints, InstantCenterPoint } from '../../types/suspension';
 
 const COLORS = {
   upperWishbone: 0xe74c3c,
@@ -35,6 +35,9 @@ export class SuspensionScene {
   private wheelMesh: THREE.Mesh | null = null;
   private annotations: THREE.Group = new THREE.Group();
   private showAnnotations = true;
+  private icTrail: THREE.Line | null = null;
+  private icMarker: THREE.Mesh | null = null;
+  private showICPath = false;
 
   constructor(container: HTMLDivElement) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
@@ -354,6 +357,46 @@ export class SuspensionScene {
       sprite.position.set(pos.x, pos.y + 25, pos.z);
       this.annotations.add(sprite);
     }
+  }
+
+  updateICPath(icCurve: InstantCenterPoint[]): void {
+    // Remove old IC visualization
+    if (this.icTrail) {
+      this.scene.remove(this.icTrail);
+      this.icTrail.geometry.dispose();
+      (this.icTrail.material as THREE.Material).dispose();
+      this.icTrail = null;
+    }
+    if (this.icMarker) {
+      this.scene.remove(this.icMarker);
+      this.icMarker.geometry.dispose();
+      (this.icMarker.material as THREE.Material).dispose();
+      this.icMarker = null;
+    }
+
+    if (!this.showICPath || icCurve.length === 0) return;
+
+    // Draw IC migration trail as a line (YZ plane, mapped to Three.js)
+    const points = icCurve.map((pt) => new THREE.Vector3(0, pt.icZ, -pt.icY));
+    const geom = new THREE.BufferGeometry().setFromPoints(points);
+    const mat = new THREE.LineBasicMaterial({ color: 0x10b981, linewidth: 2 });
+    this.icTrail = new THREE.Line(geom, mat);
+    this.scene.add(this.icTrail);
+
+    // Static IC marker (middle point)
+    const midIdx = Math.floor(icCurve.length / 2);
+    const mid = icCurve[midIdx];
+    const sphereGeom = new THREE.SphereGeometry(8, 16, 16);
+    const sphereMat = new THREE.MeshPhongMaterial({ color: 0x10b981, emissive: 0x10b981, emissiveIntensity: 0.3 });
+    this.icMarker = new THREE.Mesh(sphereGeom, sphereMat);
+    this.icMarker.position.set(0, mid.icZ, -mid.icY);
+    this.scene.add(this.icMarker);
+  }
+
+  setICPathVisible(visible: boolean): void {
+    this.showICPath = visible;
+    if (this.icTrail) this.icTrail.visible = visible;
+    if (this.icMarker) this.icMarker.visible = visible;
   }
 
   resetCamera(): void {

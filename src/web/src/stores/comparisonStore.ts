@@ -8,6 +8,8 @@ import type {
   RollCenterPoint,
   BumpSteerPoint,
   MotionRatioPoint,
+  WheelRatePoint,
+  InstantCenterPoint,
   AntiGeometryResult,
   SteeringResult,
 } from '../types/suspension';
@@ -33,6 +35,8 @@ interface ComparisonState {
   rollCenterCurve: RollCenterPoint[];
   bumpSteerCurve: BumpSteerPoint[];
   motionRatioCurve: MotionRatioPoint[];
+  wheelRateCurve: WheelRatePoint[];
+  instantCenterCurve: InstantCenterPoint[];
   isLoading: boolean;
   error: string | null;
   loadForComparison: (id: string) => Promise<void>;
@@ -53,6 +57,8 @@ export const useComparisonStore = create<ComparisonState>((set) => ({
   rollCenterCurve: [],
   bumpSteerCurve: [],
   motionRatioCurve: [],
+  wheelRateCurve: [],
+  instantCenterCurve: [],
   isLoading: false,
   error: null,
 
@@ -117,6 +123,8 @@ export const useComparisonStore = create<ComparisonState>((set) => ({
         rollCenterCurve: sweep.rollCenterMigration,
         bumpSteerCurve: sweep.bumpSteer,
         motionRatioCurve: sweep.motionRatioCurve ?? [],
+        wheelRateCurve: sweep.wheelRateCurve ?? [],
+        instantCenterCurve: sweep.instantCenterCurve ?? [],
         isLoading: false,
       });
     } catch (err: unknown) {
@@ -140,6 +148,8 @@ export const useComparisonStore = create<ComparisonState>((set) => ({
       rollCenterCurve: [],
       bumpSteerCurve: [],
       motionRatioCurve: [],
+      wheelRateCurve: [],
+      instantCenterCurve: [],
       error: null,
     });
   },
