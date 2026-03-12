@@ -14,6 +14,7 @@ export default function DesignListPanel() {
   const loadDesign = useDesignStore((s) => s.loadDesign);
   const saveDesign = useDesignStore((s) => s.saveDesign);
   const deleteDesignAction = useDesignStore((s) => s.deleteDesign);
+  const cloneDesign = useDesignStore((s) => s.cloneDesign);
   const setName = useDesignStore((s) => s.setName);
   const resetToDefaults = useDesignStore((s) => s.resetToDefaults);
 
@@ -53,6 +54,14 @@ export default function DesignListPanel() {
             className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white rounded py-1 text-xs font-medium"
           >
             {isSaving ? 'Saving...' : isDirty ? 'Save *' : 'Save'}
+          </button>
+          <button
+            onClick={cloneDesign}
+            disabled={!designId}
+            className="px-3 bg-gray-700 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-gray-300 rounded py-1 text-xs"
+            title="Duplicate current design"
+          >
+            Clone
           </button>
           <button
             onClick={resetToDefaults}

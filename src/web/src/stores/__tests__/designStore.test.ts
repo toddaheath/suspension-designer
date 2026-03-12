@@ -250,6 +250,35 @@ describe('useDesignStore', () => {
     });
   });
 
+  describe('cloneDesign', () => {
+    it('prefixes name with "Copy of"', () => {
+      const store = useDesignStore;
+      store.getState().setName('My Design');
+      store.getState().cloneDesign();
+      expect(store.getState().name).toBe('Copy of My Design');
+    });
+
+    it('clears designId and sets isDirty', () => {
+      const store = useDesignStore;
+      store.getState().setName('Test');
+      store.getState().cloneDesign();
+      expect(store.getState().designId).toBeNull();
+      expect(store.getState().isDirty).toBe(true);
+    });
+
+    it('preserves hardpoints and vehicleParams', () => {
+      const store = useDesignStore;
+      store.getState().updateHardpoint('upperBallJoint', 'x', 42);
+      const hpBefore = JSON.parse(JSON.stringify(store.getState().hardpoints));
+      const vpBefore = JSON.parse(JSON.stringify(store.getState().vehicleParams));
+
+      store.getState().cloneDesign();
+
+      expect(JSON.parse(JSON.stringify(store.getState().hardpoints))).toEqual(hpBefore);
+      expect(JSON.parse(JSON.stringify(store.getState().vehicleParams))).toEqual(vpBefore);
+    });
+  });
+
   describe('exportToJson / importFromJson', () => {
     it('exportToJson returns valid JSON with name, hardpoints, vehicleParams', () => {
       const store = useDesignStore;

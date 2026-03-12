@@ -1,15 +1,21 @@
+import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
 import { useDesignStore } from '../../stores/designStore';
 import { useCalculationStore } from '../../stores/calculationStore';
+import { useTargetStore } from '../../stores/targetStore';
 import { useNavigate } from 'react-router-dom';
 import HardpointEditor from '../editors/HardpointEditor';
 import VehicleParamsEditor from '../editors/VehicleParamsEditor';
+import DesignTargetsEditor from '../editors/DesignTargetsEditor';
+import DesignNotesEditor from '../editors/DesignNotesEditor';
 import DesignListPanel from '../designs/DesignListPanel';
 import DesignToolbar from '../designs/DesignToolbar';
 import SuspensionViewer3D from '../viewer/SuspensionViewer3D';
 import ChartPanel from '../charts/ChartPanel';
 import GeometryResultsPanel from '../results/GeometryResultsPanel';
+import KeyboardShortcutsModal from '../KeyboardShortcutsModal';
+import { generateReportHtml, openReport } from '../../services/reportService';
 
 export default function AppLayout() {
   const sidebarVisible = useUIStore((s) => s.sidebarVisible);
@@ -24,6 +30,48 @@ export default function AppLayout() {
   const isCalculating = useCalculationStore((s) => s.isLoading);
   const calcError = useCalculationStore((s) => s.error);
   const navigate = useNavigate();
+
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
+      return;
+    }
+
+    if (e.key === '?') {
+      e.preventDefault();
+      setShortcutsOpen((prev) => !prev);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+
+  const handleGenerateReport = () => {
+    const designState = useDesignStore.getState();
+    const calcState = useCalculationStore.getState();
+    const targetState = useTargetStore.getState();
+
+    const html = generateReportHtml({
+      name: designState.name,
+      notes: designState.notes,
+      hardpoints: designState.hardpoints,
+      vehicleParams: designState.vehicleParams,
+      geometry: calcState.geometryResult,
+      dynamics: calcState.dynamicsResult,
+      antiGeometry: calcState.antiGeometryResult,
+      steering: calcState.steeringResult,
+      camberCurve: calcState.camberCurve,
+      rollCenterCurve: calcState.rollCenterCurve,
+      bumpSteerCurve: calcState.bumpSteerCurve,
+      targets: targetState.targets,
+    });
+
+    openReport(html);
+  };
 
   return (
     <div className="h-screen flex flex-col bg-gray-950 text-gray-200">
@@ -53,6 +101,20 @@ export default function AppLayout() {
           )}
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={handleGenerateReport}
+            className="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded border border-gray-700 text-gray-400 hover:text-gray-200"
+            title="Generate printable report"
+          >
+            Report
+          </button>
+          <button
+            onClick={() => setShortcutsOpen(true)}
+            className="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded border border-gray-700 text-gray-400 hover:text-gray-200"
+            title="Keyboard shortcuts (?)"
+          >
+            ?
+          </button>
           {isAuthenticated ? (
             <>
               <span className="text-xs text-gray-400">
@@ -92,6 +154,8 @@ export default function AppLayout() {
             <div className="p-3 space-y-3">
               <DesignToolbar />
               <DesignListPanel />
+              <DesignNotesEditor />
+              <DesignTargetsEditor />
               <HardpointEditor />
               <VehicleParamsEditor />
             </div>
@@ -115,6 +179,12 @@ export default function AppLayout() {
           </aside>
         )}
       </div>
+
+      {/* Modals */}
+      <KeyboardShortcutsModal
+        isOpen={shortcutsOpen}
+        onClose={() => setShortcutsOpen(false)}
+      />
     </div>
   );
 }
