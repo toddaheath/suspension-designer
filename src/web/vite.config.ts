@@ -3,8 +3,11 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
+const isDemo = process.env.VITE_DEMO_MODE === 'true'
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  base: isDemo ? '/suspension-designer/' : '/',
   server: {
     proxy: {
       '/api': {

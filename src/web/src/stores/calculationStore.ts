@@ -11,6 +11,9 @@ import type {
   SteeringResult,
 } from '../types/suspension';
 import { calculateSweep } from '../services/calculationService';
+import { calculateSweepLocal } from '../services/demoCalculations';
+
+const isDemo = import.meta.env.VITE_DEMO_MODE === 'true';
 
 interface CalculationState {
   geometryResult: GeometryResult | null;
@@ -39,7 +42,9 @@ export const useCalculationStore = create<CalculationState>((set) => ({
   fetchAll: async (hardpoints, params) => {
     set({ isLoading: true, error: null });
     try {
-      const sweep = await calculateSweep(hardpoints, params);
+      const sweep = isDemo
+        ? calculateSweepLocal(hardpoints, params)
+        : await calculateSweep(hardpoints, params);
       set({
         geometryResult: sweep.geometry,
         camberCurve: sweep.camberCurve,

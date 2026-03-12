@@ -1,8 +1,16 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type { DoubleWishboneHardpoints, VehicleParams, DesignData } from '../types/suspension';
-import { listDesigns, getDesign, createDesign, updateDesign, deleteDesign } from '../services/designService';
+import { listDesigns as apiListDesigns, getDesign as apiGetDesign, createDesign as apiCreateDesign, updateDesign as apiUpdateDesign, deleteDesign as apiDeleteDesign } from '../services/designService';
+import { demoListDesigns, demoGetDesign, demoCreateDesign, demoUpdateDesign, demoDeleteDesign } from '../services/demoDesignService';
 import type { DesignSummary, DesignDetail } from '../services/designService';
+
+const isDemo = import.meta.env.VITE_DEMO_MODE === 'true';
+const listDesigns = isDemo ? demoListDesigns : apiListDesigns;
+const getDesign = isDemo ? demoGetDesign : apiGetDesign;
+const createDesign = isDemo ? demoCreateDesign : apiCreateDesign;
+const updateDesign = isDemo ? demoUpdateDesign : apiUpdateDesign;
+const deleteDesign = isDemo ? demoDeleteDesign : apiDeleteDesign;
 import type { VehiclePreset } from '../data/vehiclePresets';
 import { useNotificationStore } from './notificationStore';
 
