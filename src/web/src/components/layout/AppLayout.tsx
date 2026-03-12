@@ -14,6 +14,7 @@ import DesignToolbar from '../designs/DesignToolbar';
 import SuspensionViewer3D from '../viewer/SuspensionViewer3D';
 import ChartPanel from '../charts/ChartPanel';
 import GeometryResultsPanel from '../results/GeometryResultsPanel';
+import ComparisonPanel from '../analysis/ComparisonPanel';
 import KeyboardShortcutsModal from '../KeyboardShortcutsModal';
 import { generateReportHtml, openReport } from '../../services/reportService';
 
@@ -183,6 +184,7 @@ export default function AppLayout() {
         {resultsVisible && (
           <aside className="w-[280px] shrink-0 bg-gray-900 border-l border-gray-800 overflow-y-auto">
             <GeometryResultsPanel />
+            <ComparisonPanel />
           </aside>
         )}
       </div>

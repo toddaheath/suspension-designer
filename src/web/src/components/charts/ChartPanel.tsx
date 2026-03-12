@@ -5,6 +5,7 @@ import MotionRatioChart from './MotionRatioChart';
 import BumpSteerChart from './BumpSteerChart';
 import AntiGeometryPanel from './AntiGeometryPanel';
 import SteeringChart from './SteeringChart';
+import SensitivityPanel from '../analysis/SensitivityPanel';
 
 const TABS = [
   { key: 'camber' as const, label: 'Camber' },
@@ -13,6 +14,7 @@ const TABS = [
   { key: 'bumpSteer' as const, label: 'Bump Steer' },
   { key: 'antiGeometry' as const, label: 'Anti-Geometry' },
   { key: 'steering' as const, label: 'Steering' },
+  { key: 'sensitivity' as const, label: 'Sensitivity' },
 ];
 
 export default function ChartPanel() {
@@ -43,6 +45,11 @@ export default function ChartPanel() {
         {activeTab === 'bumpSteer' && <BumpSteerChart />}
         {activeTab === 'antiGeometry' && <AntiGeometryPanel />}
         {activeTab === 'steering' && <SteeringChart />}
+        {activeTab === 'sensitivity' && (
+          <div className="overflow-y-auto h-full">
+            <SensitivityPanel />
+          </div>
+        )}
       </div>
     </div>
   );

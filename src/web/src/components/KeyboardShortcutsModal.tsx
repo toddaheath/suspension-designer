@@ -13,6 +13,11 @@ const SHORTCUTS = [
     { keys: 'Scroll', description: 'Zoom 3D view' },
     { keys: 'Left-drag', description: 'Rotate 3D view' },
     { keys: 'Right-drag', description: 'Pan 3D view' },
+    { keys: 'Front/Side/Top/Iso', description: 'Camera presets (buttons)' },
+  ]},
+  { category: 'Analysis', shortcuts: [
+    { keys: 'Compare', description: 'Click Compare on saved design' },
+    { keys: 'Sensitivity tab', description: 'Parametric sweep analysis' },
   ]},
   { category: 'Animation', shortcuts: [
     { keys: 'Space', description: 'Play/pause suspension travel' },
