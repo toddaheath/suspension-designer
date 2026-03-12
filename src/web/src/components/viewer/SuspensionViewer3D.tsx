@@ -103,6 +103,16 @@ export default function SuspensionViewer3D() {
     <div ref={containerRef} className="w-full h-full relative bg-[#1a1a2e]">
       {/* Top-right controls */}
       <div className="absolute top-2 right-2 z-10 flex gap-1">
+        {(['front', 'side', 'top', 'iso'] as const).map((preset) => (
+          <button
+            key={preset}
+            onClick={() => sceneRef.current?.setCameraPreset(preset)}
+            className="px-2 py-1 text-xs rounded border bg-gray-800 border-gray-600 text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+            title={`${preset.charAt(0).toUpperCase() + preset.slice(1)} view`}
+          >
+            {preset.charAt(0).toUpperCase() + preset.slice(1)}
+          </button>
+        ))}
         <button
           onClick={() => setShowLabels(!showLabels)}
           className={`px-2 py-1 text-xs rounded border ${
@@ -118,7 +128,7 @@ export default function SuspensionViewer3D() {
           className="px-2 py-1 text-xs rounded border bg-gray-800 border-gray-600 text-gray-400 hover:text-gray-200 hover:bg-gray-700"
           title="Reset camera view"
         >
-          Reset View
+          Reset
         </button>
       </div>
 

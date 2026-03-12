@@ -362,6 +362,26 @@ export class SuspensionScene {
     this.controls.update();
   }
 
+  setCameraPreset(preset: 'front' | 'side' | 'top' | 'iso'): void {
+    const target = new THREE.Vector3(0, 200, -400);
+    switch (preset) {
+      case 'front':
+        this.camera.position.set(0, 200, 800);
+        break;
+      case 'side':
+        this.camera.position.set(1000, 200, -400);
+        break;
+      case 'top':
+        this.camera.position.set(0, 1200, -400);
+        break;
+      case 'iso':
+        this.camera.position.set(800, 600, 800);
+        break;
+    }
+    this.controls.target.copy(target);
+    this.controls.update();
+  }
+
   setAnnotationsVisible(visible: boolean): void {
     this.showAnnotations = visible;
     this.annotations.visible = visible;

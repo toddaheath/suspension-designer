@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDesignStore } from '../../stores/designStore';
 import { useAuthStore } from '../../stores/authStore';
+import { useComparisonStore } from '../../stores/comparisonStore';
 
 export default function DesignListPanel() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -17,6 +18,10 @@ export default function DesignListPanel() {
   const cloneDesign = useDesignStore((s) => s.cloneDesign);
   const setName = useDesignStore((s) => s.setName);
   const resetToDefaults = useDesignStore((s) => s.resetToDefaults);
+
+  const comparisonId = useComparisonStore((s) => s.designId);
+  const loadForComparison = useComparisonStore((s) => s.loadForComparison);
+  const clearComparison = useComparisonStore((s) => s.clearComparison);
 
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
@@ -114,16 +119,38 @@ export default function DesignListPanel() {
                     </button>
                   </div>
                 ) : (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setConfirmDeleteId(d.id);
-                    }}
-                    className="text-gray-500 hover:text-red-400 shrink-0 px-1"
-                    title="Delete"
-                  >
-                    x
-                  </button>
+                  <div className="flex gap-0.5 shrink-0">
+                    {d.id !== designId && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (comparisonId === d.id) {
+                            clearComparison();
+                          } else {
+                            loadForComparison(d.id);
+                          }
+                        }}
+                        className={`text-[10px] px-1 rounded ${
+                          comparisonId === d.id
+                            ? 'text-purple-400 hover:text-purple-300'
+                            : 'text-gray-500 hover:text-purple-400'
+                        }`}
+                        title={comparisonId === d.id ? 'Clear comparison' : 'Compare with current design'}
+                      >
+                        {comparisonId === d.id ? 'Comparing' : 'Compare'}
+                      </button>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setConfirmDeleteId(d.id);
+                      }}
+                      className="text-gray-500 hover:text-red-400 px-1"
+                      title="Delete"
+                    >
+                      x
+                    </button>
+                  </div>
                 )}
               </div>
             ))}
