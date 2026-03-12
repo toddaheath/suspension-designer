@@ -59,6 +59,7 @@ interface DesignState {
   hardpoints: DoubleWishboneHardpoints;
   vehicleParams: VehicleParams;
   name: string;
+  notes: string;
   designId: string | null;
   isDirty: boolean;
   savedDesigns: DesignSummary[];
@@ -71,6 +72,7 @@ interface DesignState {
   ) => void;
   updateVehicleParam: (name: keyof VehicleParams, value: number) => void;
   setName: (name: string) => void;
+  setNotes: (notes: string) => void;
   resetToDefaults: () => void;
   applyPreset: (preset: VehiclePreset) => void;
   exportToJson: () => string;
@@ -79,6 +81,7 @@ interface DesignState {
   redo: () => void;
   canUndo: boolean;
   canRedo: boolean;
+  cloneDesign: () => void;
   saveDesign: () => Promise<void>;
   loadDesign: (id: string) => Promise<void>;
   fetchDesigns: () => Promise<void>;
@@ -133,6 +136,7 @@ export const useDesignStore = create<DesignState>()(
     hardpoints: DEFAULT_HARDPOINTS,
     vehicleParams: DEFAULT_VEHICLE_PARAMS,
     name: 'Untitled Design',
+    notes: '',
     designId: null,
     isDirty: false,
     savedDesigns: [],
@@ -165,11 +169,18 @@ export const useDesignStore = create<DesignState>()(
         state.isDirty = true;
       }),
 
+    setNotes: (notes) =>
+      set((state) => {
+        state.notes = notes;
+        state.isDirty = true;
+      }),
+
     resetToDefaults: () =>
       set((state) => {
         state.hardpoints = DEFAULT_HARDPOINTS;
         state.vehicleParams = DEFAULT_VEHICLE_PARAMS;
         state.name = 'Untitled Design';
+        state.notes = '';
         state.designId = null;
         state.isDirty = false;
       }),
@@ -184,8 +195,8 @@ export const useDesignStore = create<DesignState>()(
       }),
 
     exportToJson: () => {
-      const { name, hardpoints, vehicleParams } = get();
-      const data: DesignData = { name, hardpoints, vehicleParams };
+      const { name, notes, hardpoints, vehicleParams } = get();
+      const data = { name, notes, hardpoints, vehicleParams };
       return JSON.stringify(data, null, 2);
     },
 
@@ -216,6 +227,7 @@ export const useDesignStore = create<DesignState>()(
 
         set((state) => {
           state.name = data.name || 'Imported Design';
+          state.notes = (data as { notes?: string }).notes || '';
           state.hardpoints = data.hardpoints;
           state.vehicleParams = data.vehicleParams;
           state.designId = null;
@@ -249,6 +261,13 @@ export const useDesignStore = create<DesignState>()(
         state.isDirty = true;
         state.canUndo = undoStack.length > 0;
         state.canRedo = redoStack.length > 0;
+      }),
+
+    cloneDesign: () =>
+      set((state) => {
+        state.name = `Copy of ${state.name}`;
+        state.designId = null;
+        state.isDirty = true;
       }),
 
     saveDesign: async () => {

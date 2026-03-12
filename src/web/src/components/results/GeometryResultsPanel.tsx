@@ -1,6 +1,30 @@
 import { useState } from 'react';
 import { useCalculationStore } from '../../stores/calculationStore';
+import { useTargetStore, evaluateTarget } from '../../stores/targetStore';
+import type { TargetKey, TargetStatus } from '../../stores/targetStore';
 import { exportResultsCsv, downloadCsv } from '../../services/exportService';
+
+const STATUS_STYLES: Record<TargetStatus, string> = {
+  pass: 'bg-green-500',
+  warn: 'bg-yellow-500',
+  fail: 'bg-red-500',
+  none: '',
+};
+
+const STATUS_LABELS: Record<TargetStatus, string> = {
+  pass: 'Within target range',
+  warn: 'Near target boundary',
+  fail: 'Outside target range',
+  none: '',
+};
+
+interface ResultRow {
+  label: string;
+  value: string;
+  unit: string;
+  targetKey?: TargetKey;
+  numericValue?: number;
+}
 
 export default function GeometryResultsPanel() {
   const geometry = useCalculationStore((s) => s.geometryResult);
@@ -12,6 +36,7 @@ export default function GeometryResultsPanel() {
   const bumpSteerCurve = useCalculationStore((s) => s.bumpSteerCurve);
   const isLoading = useCalculationStore((s) => s.isLoading);
   const error = useCalculationStore((s) => s.error);
+  const targets = useTargetStore((s) => s.targets);
   const [copied, setCopied] = useState(false);
 
   if (isLoading) {
@@ -34,98 +59,53 @@ export default function GeometryResultsPanel() {
     );
   }
 
-  const geometryRows: { label: string; value: string; unit: string }[] = geometry
+  const geometryRows: ResultRow[] = geometry
     ? [
-        {
-          label: 'Instant Center X',
-          value: geometry.instantCenter.x.toFixed(1),
-          unit: 'mm',
-        },
-        {
-          label: 'Instant Center Y',
-          value: geometry.instantCenter.y.toFixed(1),
-          unit: 'mm',
-        },
-        {
-          label: 'Instant Center Z',
-          value: geometry.instantCenter.z.toFixed(1),
-          unit: 'mm',
-        },
-        {
-          label: 'Roll Center Height',
-          value: geometry.rollCenterHeight.toFixed(1),
-          unit: 'mm',
-        },
-        {
-          label: 'KPI Angle',
-          value: geometry.kingpinInclinationDegrees.toFixed(2),
-          unit: 'deg',
-        },
-        {
-          label: 'Caster Angle',
-          value: geometry.casterAngleDegrees.toFixed(2),
-          unit: 'deg',
-        },
-        {
-          label: 'Scrub Radius',
-          value: geometry.scrubRadius.toFixed(1),
-          unit: 'mm',
-        },
-        {
-          label: 'Mechanical Trail',
-          value: geometry.mechanicalTrail.toFixed(1),
-          unit: 'mm',
-        },
+        { label: 'Instant Center X', value: geometry.instantCenter.x.toFixed(1), unit: 'mm' },
+        { label: 'Instant Center Y', value: geometry.instantCenter.y.toFixed(1), unit: 'mm' },
+        { label: 'Instant Center Z', value: geometry.instantCenter.z.toFixed(1), unit: 'mm' },
+        { label: 'Roll Center Height', value: geometry.rollCenterHeight.toFixed(1), unit: 'mm', targetKey: 'rollCenterHeight', numericValue: geometry.rollCenterHeight },
+        { label: 'KPI Angle', value: geometry.kingpinInclinationDegrees.toFixed(2), unit: 'deg', targetKey: 'kpiAngle', numericValue: geometry.kingpinInclinationDegrees },
+        { label: 'Caster Angle', value: geometry.casterAngleDegrees.toFixed(2), unit: 'deg', targetKey: 'casterAngle', numericValue: geometry.casterAngleDegrees },
+        { label: 'Scrub Radius', value: geometry.scrubRadius.toFixed(1), unit: 'mm', targetKey: 'scrubRadius', numericValue: geometry.scrubRadius },
+        { label: 'Mechanical Trail', value: geometry.mechanicalTrail.toFixed(1), unit: 'mm', targetKey: 'mechanicalTrail', numericValue: geometry.mechanicalTrail },
       ]
     : [];
 
-  const dynamicsRows: { label: string; value: string; unit: string }[] = dynamics
+  const dynamicsRows: ResultRow[] = dynamics
     ? [
-        {
-          label: 'Motion Ratio',
-          value: dynamics.motionRatio.toFixed(3),
-          unit: '',
-        },
-        {
-          label: 'Wheel Rate',
-          value: dynamics.wheelRate.toFixed(1),
-          unit: 'N/mm',
-        },
-        {
-          label: 'Natural Frequency',
-          value: dynamics.naturalFrequency.toFixed(2),
-          unit: 'Hz',
-        },
-        {
-          label: 'Damping Ratio',
-          value: dynamics.dampingRatio.toFixed(3),
-          unit: '',
-        },
-        {
-          label: 'Critical Damping',
-          value: dynamics.criticalDamping.toFixed(1),
-          unit: 'N·s/mm',
-        },
+        { label: 'Motion Ratio', value: dynamics.motionRatio.toFixed(3), unit: '', targetKey: 'motionRatio', numericValue: dynamics.motionRatio },
+        { label: 'Wheel Rate', value: dynamics.wheelRate.toFixed(1), unit: 'N/mm', targetKey: 'wheelRate', numericValue: dynamics.wheelRate },
+        { label: 'Natural Frequency', value: dynamics.naturalFrequency.toFixed(2), unit: 'Hz', targetKey: 'naturalFrequency', numericValue: dynamics.naturalFrequency },
+        { label: 'Damping Ratio', value: dynamics.dampingRatio.toFixed(3), unit: '', targetKey: 'dampingRatio', numericValue: dynamics.dampingRatio },
+        { label: 'Critical Damping', value: dynamics.criticalDamping.toFixed(1), unit: 'N\u00b7s/mm' },
       ]
     : [];
 
-  const antiGeoRows: { label: string; value: string; unit: string }[] = antiGeo
+  const antiGeoRows: ResultRow[] = antiGeo
     ? [
-        { label: 'Anti-Dive', value: antiGeo.antiDivePercent.toFixed(1), unit: '%' },
-        { label: 'Anti-Squat', value: antiGeo.antiSquatPercent.toFixed(1), unit: '%' },
+        { label: 'Anti-Dive', value: antiGeo.antiDivePercent.toFixed(1), unit: '%', targetKey: 'antiDive', numericValue: antiGeo.antiDivePercent },
+        { label: 'Anti-Squat', value: antiGeo.antiSquatPercent.toFixed(1), unit: '%', targetKey: 'antiSquat', numericValue: antiGeo.antiSquatPercent },
       ]
     : [];
 
-  const steeringRows: { label: string; value: string; unit: string }[] =
+  const steeringRows: ResultRow[] =
     steering && steering.ackermannCurve.length > 0
       ? steering.ackermannCurve.map((pt) => ({
-          label: `Steer ${pt.steeringAngleDegrees.toFixed(0)}°`,
+          label: `Steer ${pt.steeringAngleDegrees.toFixed(0)}\u00b0`,
           value: pt.ackermannPercent.toFixed(1),
           unit: '%',
         }))
       : [];
 
   const hasResults = geometryRows.length > 0 || dynamicsRows.length > 0;
+
+  // Count compliance summary
+  const allTargeted = [...geometryRows, ...dynamicsRows, ...antiGeoRows].filter((r) => r.targetKey);
+  const enabledTargets = allTargeted.filter((r) => r.targetKey && targets[r.targetKey].enabled);
+  const passCount = enabledTargets.filter((r) => evaluateTarget(targets[r.targetKey!], r.numericValue!) === 'pass').length;
+  const warnCount = enabledTargets.filter((r) => evaluateTarget(targets[r.targetKey!], r.numericValue!) === 'warn').length;
+  const failCount = enabledTargets.filter((r) => evaluateTarget(targets[r.targetKey!], r.numericValue!) === 'fail').length;
 
   const handleCopyAll = () => {
     const allRows = [...geometryRows, ...dynamicsRows, ...antiGeoRows];
@@ -162,12 +142,43 @@ export default function GeometryResultsPanel() {
           </button>
         </div>
       )}
+
+      {/* Target compliance summary */}
+      {enabledTargets.length > 0 && (
+        <div className="mb-3 px-2 py-1.5 bg-gray-800/50 rounded border border-gray-700">
+          <div className="text-[10px] text-gray-400 mb-1">Target Compliance</div>
+          <div className="flex gap-3 text-xs">
+            {passCount > 0 && (
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />
+                <span className="text-green-400">{passCount} pass</span>
+              </span>
+            )}
+            {warnCount > 0 && (
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-yellow-500 inline-block" />
+                <span className="text-yellow-400">{warnCount} warn</span>
+              </span>
+            )}
+            {failCount > 0 && (
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />
+                <span className="text-red-400">{failCount} fail</span>
+              </span>
+            )}
+            {passCount === enabledTargets.length && (
+              <span className="text-green-400 text-[10px]">All targets met</span>
+            )}
+          </div>
+        </div>
+      )}
+
       {geometryRows.length > 0 && (
         <>
           <h3 className="text-sm font-semibold text-gray-300 mb-3">
             Geometry Results
           </h3>
-          <ResultTable rows={geometryRows} />
+          <ResultTable rows={geometryRows} targets={targets} />
         </>
       )}
       {dynamicsRows.length > 0 && (
@@ -175,7 +186,7 @@ export default function GeometryResultsPanel() {
           <h3 className="text-sm font-semibold text-gray-300 mb-3 mt-4">
             Dynamics Results
           </h3>
-          <ResultTable rows={dynamicsRows} />
+          <ResultTable rows={dynamicsRows} targets={targets} />
         </>
       )}
       {antiGeoRows.length > 0 && (
@@ -183,7 +194,7 @@ export default function GeometryResultsPanel() {
           <h3 className="text-sm font-semibold text-gray-300 mb-3 mt-4">
             Anti-Geometry
           </h3>
-          <ResultTable rows={antiGeoRows} />
+          <ResultTable rows={antiGeoRows} targets={targets} />
         </>
       )}
       {steeringRows.length > 0 && (
@@ -191,26 +202,51 @@ export default function GeometryResultsPanel() {
           <h3 className="text-sm font-semibold text-gray-300 mb-3 mt-4">
             Ackermann Geometry
           </h3>
-          <ResultTable rows={steeringRows} />
+          <ResultTable rows={steeringRows} targets={targets} />
         </>
       )}
     </div>
   );
 }
 
-function ResultTable({ rows }: { rows: { label: string; value: string; unit: string }[] }) {
+function ResultTable({
+  rows,
+  targets,
+}: {
+  rows: ResultRow[];
+  targets: Record<TargetKey, { enabled: boolean; min: number; max: number }>;
+}) {
   return (
     <table className="w-full text-xs">
       <tbody>
-        {rows.map((row) => (
-          <tr key={row.label} className="border-b border-gray-800">
-            <td className="py-1.5 text-gray-400">{row.label}</td>
-            <td className="py-1.5 text-right text-gray-200 font-mono">
-              {row.value}
-            </td>
-            <td className="py-1.5 pl-1 text-gray-500 w-8">{row.unit}</td>
-          </tr>
-        ))}
+        {rows.map((row) => {
+          const status: TargetStatus = row.targetKey && row.numericValue !== undefined
+            ? evaluateTarget(targets[row.targetKey], row.numericValue)
+            : 'none';
+
+          return (
+            <tr key={row.label} className="border-b border-gray-800">
+              <td className="py-1.5 text-gray-400 flex items-center gap-1.5">
+                {status !== 'none' && (
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full shrink-0 ${STATUS_STYLES[status]}`}
+                    title={`${STATUS_LABELS[status]} (${targets[row.targetKey!].min} - ${targets[row.targetKey!].max})`}
+                  />
+                )}
+                {row.label}
+              </td>
+              <td className={`py-1.5 text-right font-mono ${
+                status === 'fail' ? 'text-red-400' :
+                status === 'warn' ? 'text-yellow-300' :
+                status === 'pass' ? 'text-green-400' :
+                'text-gray-200'
+              }`}>
+                {row.value}
+              </td>
+              <td className="py-1.5 pl-1 text-gray-500 w-8">{row.unit}</td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );
