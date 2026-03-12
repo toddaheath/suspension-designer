@@ -16,8 +16,11 @@ import ChartPanel from '../charts/ChartPanel';
 import GeometryResultsPanel from '../results/GeometryResultsPanel';
 import ComparisonPanel from '../analysis/ComparisonPanel';
 import KeyboardShortcutsModal from '../KeyboardShortcutsModal';
+import OnboardingOverlay from '../OnboardingOverlay';
 import { useUnitStore } from '../../stores/unitStore';
 import { generateReportHtml, openReport } from '../../services/reportService';
+import { generateShareUrl, decodeDesign } from '../../services/shareService';
+import { useNotificationStore } from '../../stores/notificationStore';
 
 const isDemo = import.meta.env.VITE_DEMO_MODE === 'true';
 
@@ -38,6 +41,34 @@ export default function AppLayout() {
   const toggleUnits = useUnitStore((s) => s.toggle);
 
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+
+  // Load shared design from URL on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const designParam = params.get('design');
+    if (designParam) {
+      const decoded = decodeDesign(designParam);
+      if (decoded) {
+        const store = useDesignStore.getState();
+        store.importFromJson(JSON.stringify({
+          name: decoded.name,
+          hardpoints: decoded.hardpoints,
+          vehicleParams: decoded.vehicleParams,
+        }));
+        useNotificationStore.getState().addNotification('success', `Loaded shared design: ${decoded.name}`);
+        // Clean the URL
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
+  }, []);
+
+  const handleShare = () => {
+    const { name, hardpoints, vehicleParams } = useDesignStore.getState();
+    const url = generateShareUrl(name, hardpoints, vehicleParams);
+    navigator.clipboard.writeText(url).then(() => {
+      useNotificationStore.getState().addNotification('success', 'Share link copied to clipboard');
+    });
+  };
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     const target = e.target as HTMLElement;
@@ -122,6 +153,13 @@ export default function AppLayout() {
             title={`Switch to ${unitSystem === 'metric' ? 'imperial' : 'metric'} units`}
           >
             {unitSystem === 'metric' ? 'mm' : 'in'}
+          </button>
+          <button
+            onClick={handleShare}
+            className="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded border border-gray-700 text-gray-400 hover:text-gray-200 hidden sm:block"
+            title="Copy shareable link to clipboard"
+          >
+            Share
           </button>
           <button
             onClick={handleGenerateReport}
@@ -209,6 +247,7 @@ export default function AppLayout() {
         isOpen={shortcutsOpen}
         onClose={() => setShortcutsOpen(false)}
       />
+      <OnboardingOverlay />
     </div>
   );
 }

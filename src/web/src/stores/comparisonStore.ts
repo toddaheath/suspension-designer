@@ -7,6 +7,7 @@ import type {
   CamberCurvePoint,
   RollCenterPoint,
   BumpSteerPoint,
+  MotionRatioPoint,
   AntiGeometryResult,
   SteeringResult,
 } from '../types/suspension';
@@ -31,6 +32,7 @@ interface ComparisonState {
   camberCurve: CamberCurvePoint[];
   rollCenterCurve: RollCenterPoint[];
   bumpSteerCurve: BumpSteerPoint[];
+  motionRatioCurve: MotionRatioPoint[];
   isLoading: boolean;
   error: string | null;
   loadForComparison: (id: string) => Promise<void>;
@@ -50,6 +52,7 @@ export const useComparisonStore = create<ComparisonState>((set) => ({
   camberCurve: [],
   rollCenterCurve: [],
   bumpSteerCurve: [],
+  motionRatioCurve: [],
   isLoading: false,
   error: null,
 
@@ -113,6 +116,7 @@ export const useComparisonStore = create<ComparisonState>((set) => ({
         camberCurve: sweep.camberCurve,
         rollCenterCurve: sweep.rollCenterMigration,
         bumpSteerCurve: sweep.bumpSteer,
+        motionRatioCurve: sweep.motionRatioCurve ?? [],
         isLoading: false,
       });
     } catch (err: unknown) {
@@ -135,6 +139,7 @@ export const useComparisonStore = create<ComparisonState>((set) => ({
       camberCurve: [],
       rollCenterCurve: [],
       bumpSteerCurve: [],
+      motionRatioCurve: [],
       error: null,
     });
   },

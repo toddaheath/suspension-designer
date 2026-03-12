@@ -66,6 +66,11 @@ export interface BumpSteerPoint {
   toeAngleDegrees: number;
 }
 
+export interface MotionRatioPoint {
+  wheelTravel: number;
+  motionRatio: number;
+}
+
 export interface AntiGeometryResult {
   antiDivePercent: number;
   antiSquatPercent: number;
@@ -88,6 +93,7 @@ export interface SweepResult {
   antiGeometry: AntiGeometryResult;
   steering: SteeringResult;
   bumpSteer: BumpSteerPoint[];
+  motionRatioCurve: MotionRatioPoint[];
 }
 
 export interface DesignData {
