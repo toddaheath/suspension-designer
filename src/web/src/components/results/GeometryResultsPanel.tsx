@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useCalculationStore } from '../../stores/calculationStore';
 import { useTargetStore, evaluateTarget } from '../../stores/targetStore';
 import type { TargetKey, TargetStatus } from '../../stores/targetStore';
+import { useUnitStore, displayValue, unitLabel } from '../../stores/unitStore';
 import { exportResultsCsv, downloadCsv } from '../../services/exportService';
 
 const STATUS_STYLES: Record<TargetStatus, string> = {
@@ -23,7 +24,7 @@ interface ResultRow {
   value: string;
   unit: string;
   targetKey?: TargetKey;
-  numericValue?: number;
+  numericValue?: number;  // always metric for target evaluation
 }
 
 export default function GeometryResultsPanel() {
@@ -37,7 +38,11 @@ export default function GeometryResultsPanel() {
   const isLoading = useCalculationStore((s) => s.isLoading);
   const error = useCalculationStore((s) => s.error);
   const targets = useTargetStore((s) => s.targets);
+  const unitSystem = useUnitStore((s) => s.system);
   const [copied, setCopied] = useState(false);
+
+  const dv = (v: number, uKey: string) => displayValue(v, uKey, unitSystem);
+  const ul = (uKey: string) => unitLabel(uKey, unitSystem);
 
   if (isLoading) {
     return (
@@ -61,24 +66,24 @@ export default function GeometryResultsPanel() {
 
   const geometryRows: ResultRow[] = geometry
     ? [
-        { label: 'Instant Center X', value: geometry.instantCenter.x.toFixed(1), unit: 'mm' },
-        { label: 'Instant Center Y', value: geometry.instantCenter.y.toFixed(1), unit: 'mm' },
-        { label: 'Instant Center Z', value: geometry.instantCenter.z.toFixed(1), unit: 'mm' },
-        { label: 'Roll Center Height', value: geometry.rollCenterHeight.toFixed(1), unit: 'mm', targetKey: 'rollCenterHeight', numericValue: geometry.rollCenterHeight },
+        { label: 'Instant Center X', value: dv(geometry.instantCenter.x, 'length').toFixed(1), unit: ul('length') },
+        { label: 'Instant Center Y', value: dv(geometry.instantCenter.y, 'length').toFixed(1), unit: ul('length') },
+        { label: 'Instant Center Z', value: dv(geometry.instantCenter.z, 'length').toFixed(1), unit: ul('length') },
+        { label: 'Roll Center Height', value: dv(geometry.rollCenterHeight, 'length').toFixed(1), unit: ul('length'), targetKey: 'rollCenterHeight', numericValue: geometry.rollCenterHeight },
         { label: 'KPI Angle', value: geometry.kingpinInclinationDegrees.toFixed(2), unit: 'deg', targetKey: 'kpiAngle', numericValue: geometry.kingpinInclinationDegrees },
         { label: 'Caster Angle', value: geometry.casterAngleDegrees.toFixed(2), unit: 'deg', targetKey: 'casterAngle', numericValue: geometry.casterAngleDegrees },
-        { label: 'Scrub Radius', value: geometry.scrubRadius.toFixed(1), unit: 'mm', targetKey: 'scrubRadius', numericValue: geometry.scrubRadius },
-        { label: 'Mechanical Trail', value: geometry.mechanicalTrail.toFixed(1), unit: 'mm', targetKey: 'mechanicalTrail', numericValue: geometry.mechanicalTrail },
+        { label: 'Scrub Radius', value: dv(geometry.scrubRadius, 'length').toFixed(1), unit: ul('length'), targetKey: 'scrubRadius', numericValue: geometry.scrubRadius },
+        { label: 'Mechanical Trail', value: dv(geometry.mechanicalTrail, 'length').toFixed(1), unit: ul('length'), targetKey: 'mechanicalTrail', numericValue: geometry.mechanicalTrail },
       ]
     : [];
 
   const dynamicsRows: ResultRow[] = dynamics
     ? [
         { label: 'Motion Ratio', value: dynamics.motionRatio.toFixed(3), unit: '', targetKey: 'motionRatio', numericValue: dynamics.motionRatio },
-        { label: 'Wheel Rate', value: dynamics.wheelRate.toFixed(1), unit: 'N/mm', targetKey: 'wheelRate', numericValue: dynamics.wheelRate },
+        { label: 'Wheel Rate', value: dv(dynamics.wheelRate, 'springRate').toFixed(1), unit: ul('springRate'), targetKey: 'wheelRate', numericValue: dynamics.wheelRate },
         { label: 'Natural Frequency', value: dynamics.naturalFrequency.toFixed(2), unit: 'Hz', targetKey: 'naturalFrequency', numericValue: dynamics.naturalFrequency },
         { label: 'Damping Ratio', value: dynamics.dampingRatio.toFixed(3), unit: '', targetKey: 'dampingRatio', numericValue: dynamics.dampingRatio },
-        { label: 'Critical Damping', value: dynamics.criticalDamping.toFixed(1), unit: 'N\u00b7s/mm' },
+        { label: 'Critical Damping', value: dv(dynamics.criticalDamping, 'damping').toFixed(1), unit: ul('damping') },
       ]
     : [];
 

@@ -1,4 +1,5 @@
 import { useDesignStore } from '../../stores/designStore';
+import { useUnitStore, displayValue, storageValue, unitLabel } from '../../stores/unitStore';
 import ParameterGroup from './ParameterGroup';
 import type { DoubleWishboneHardpoints } from '../../types/suspension';
 
@@ -61,6 +62,7 @@ function PointInput({
 }) {
   const point = useDesignStore((s) => s.hardpoints[pointKey]);
   const updateHardpoint = useDesignStore((s) => s.updateHardpoint);
+  const unitSystem = useUnitStore((s) => s.system);
 
   return (
     <fieldset className="mb-2">
@@ -68,19 +70,21 @@ function PointInput({
       <div className="grid grid-cols-3 gap-1">
         {(['x', 'y', 'z'] as const).map((axis) => {
           const id = `hp-${pointKey}-${axis}`;
+          const displayed = displayValue(point[axis], 'length', unitSystem);
           return (
             <div key={axis} className="flex items-center">
               <label htmlFor={id} className="text-xs text-gray-500 w-4 uppercase">{axis}</label>
               <input
                 id={id}
                 type="number"
-                value={point[axis]}
-                onChange={(e) =>
-                  updateHardpoint(pointKey, axis, parseFloat(e.target.value) || 0)
-                }
+                value={parseFloat(displayed.toFixed(2))}
+                onChange={(e) => {
+                  const raw = parseFloat(e.target.value) || 0;
+                  updateHardpoint(pointKey, axis, storageValue(raw, 'length', unitSystem));
+                }}
                 aria-label={`${label} ${axis.toUpperCase()}`}
                 className="w-full bg-gray-800 border border-gray-600 rounded px-1.5 py-0.5 text-xs text-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                step={1}
+                step={unitSystem === 'imperial' ? 0.1 : 1}
               />
             </div>
           );
@@ -91,10 +95,11 @@ function PointInput({
 }
 
 export default function HardpointEditor() {
+  const unitSystem = useUnitStore((s) => s.system);
   return (
     <div>
       <h3 className="text-sm font-semibold text-gray-300 mb-2 px-1">
-        Hardpoints (mm)
+        Hardpoints ({unitLabel('length', unitSystem)})
       </h3>
       {HARDPOINT_GROUPS.map((group) => (
         <ParameterGroup key={group.label} title={group.label} defaultOpen={false}>
