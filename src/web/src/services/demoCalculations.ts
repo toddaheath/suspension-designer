@@ -235,12 +235,24 @@ function computeDynamics(hp: DoubleWishboneHardpoints, vp: VehicleParams): Dynam
   const criticalDamping = 2 * Math.sqrt((vp.springRate / 1000) * cornerMass) * 1000; // N·s/m
   const dampingRatio = vp.dampingCoefficient / criticalDamping;
 
+  // Roll stiffness: contribution from springs + ARB
+  // Spring contribution per axle: 0.5 * trackWidth^2 * wheelRate (N·mm/rad)
+  // ARB contribution: antiRollBarRate (N/mm) * (trackWidth/2)^2 (mm^2) = N·mm/rad
+  const halfTrack = vp.trackWidth / 2;
+  const springRollStiffness = 0.5 * halfTrack * halfTrack * wheelRate; // N·mm/rad
+  const arbRate = (vp.antiRollBarRate ?? 0) / 1000; // convert N/m to N/mm
+  const arbRollStiffness = arbRate * halfTrack * halfTrack;
+  const rollStiffness = (springRollStiffness + arbRollStiffness) / 1000; // N·m/deg -> convert units
+  // Convert from N·mm/rad to N·m/deg: divide by 1000 (mm->m) and multiply by pi/180 (rad->deg)
+  const rollStiffnessFinal = (springRollStiffness + arbRollStiffness) / 1000 * (Math.PI / 180);
+
   return {
     motionRatio,
     wheelRate,
     naturalFrequency,
     dampingRatio,
     criticalDamping: criticalDamping / 1000, // convert to N·s/mm
+    rollStiffness: rollStiffnessFinal,
   };
 }
 

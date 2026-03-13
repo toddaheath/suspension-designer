@@ -19,6 +19,7 @@ describe('VehicleParamsEditor', () => {
     { label: 'Tire Radius', key: 'tireRadius', defaultValue: 228 },
     { label: 'CG Height', key: 'cgHeight', defaultValue: 300 },
     { label: 'Front Brake Bias', key: 'frontBrakeProportion', defaultValue: 0.6 },
+    { label: 'ARB Rate', key: 'antiRollBarRate', defaultValue: 0 },
   ];
 
   it('renders the "Vehicle Parameters" group title', () => {
@@ -43,7 +44,7 @@ describe('VehicleParamsEditor', () => {
   it('renders all 10 number inputs', () => {
     render(<VehicleParamsEditor />);
     const inputs = screen.getAllByRole('spinbutton');
-    expect(inputs).toHaveLength(10);
+    expect(inputs).toHaveLength(11);
   });
 
   it('calls updateVehicleParam when an input value changes', () => {
@@ -83,7 +84,7 @@ describe('VehicleParamsEditor', () => {
     expect(mmElements.length).toBeGreaterThanOrEqual(1);
 
     expect(screen.getAllByText('kg').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('N/mm')).toBeInTheDocument();
+    expect(screen.getAllByText('N/mm').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('N·s/mm')).toBeInTheDocument();
   });
 });

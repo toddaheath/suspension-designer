@@ -30,6 +30,7 @@ const TEST_PARAMS: VehicleParams = {
   tireRadius: 228,
   cgHeight: 300,
   frontBrakeProportion: 0.6,
+  antiRollBarRate: 0,
 };
 
 describe('sensitivityService', () => {

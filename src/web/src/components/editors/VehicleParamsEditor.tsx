@@ -23,6 +23,7 @@ const PARAM_DEFS: {
   { key: 'tireRadius', label: 'Tire Radius', unitKey: 'length', step: 5, min: 100, max: 500 },
   { key: 'cgHeight', label: 'CG Height', unitKey: 'length', step: 5, min: 50, max: 2000 },
   { key: 'frontBrakeProportion', label: 'Front Brake Bias', unitKey: 'ratio', step: 0.05, min: 0.3, max: 0.9 },
+  { key: 'antiRollBarRate', label: 'ARB Rate', unitKey: 'springRate', step: 1, min: 0, max: 500 },
 ];
 
 export default function VehicleParamsEditor() {

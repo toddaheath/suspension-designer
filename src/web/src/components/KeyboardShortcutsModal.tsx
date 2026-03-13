@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 
 const isMac = typeof navigator !== 'undefined' && /Mac/.test(navigator.userAgent);
 const mod = isMac ? 'Cmd' : 'Ctrl';
@@ -20,6 +20,9 @@ const SHORTCUTS = [
   { category: 'Animation', shortcuts: [
     { keys: 'Space', description: 'Play/pause suspension travel' },
   ]},
+  { category: 'Theme', shortcuts: [
+    { keys: 'T', description: 'Toggle dark/light theme' },
+  ]},
 ];
 
 interface Props {
@@ -28,14 +31,47 @@ interface Props {
 }
 
 export default function KeyboardShortcutsModal({ isOpen, onClose }: Props) {
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      onClose();
+      return;
+    }
+    if (e.key === 'Tab' && modalRef.current) {
+      const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+  }, [onClose]);
+
   useEffect(() => {
     if (!isOpen) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+    window.addEventListener('keydown', handleKeyDown);
+    // Auto-focus the close button on open
+    const timer = setTimeout(() => {
+      const btn = modalRef.current?.querySelector<HTMLElement>('button');
+      btn?.focus();
+    }, 0);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      clearTimeout(timer);
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [isOpen, onClose]);
+  }, [isOpen, handleKeyDown]);
 
   if (!isOpen) return null;
 
@@ -43,8 +79,11 @@ export default function KeyboardShortcutsModal({ isOpen, onClose }: Props) {
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Keyboard shortcuts"
     >
-      <div className="bg-gray-900 border border-gray-700 rounded-lg shadow-xl w-96 max-h-[80vh] overflow-y-auto">
+      <div ref={modalRef} className="bg-gray-900 border border-gray-700 rounded-lg shadow-xl w-96 max-h-[80vh] overflow-y-auto">
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
           <h2 className="text-sm font-semibold text-gray-200">Keyboard Shortcuts</h2>
           <button

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 const ONBOARDING_KEY = 'suspension-designer-onboarded';
 
@@ -39,10 +39,51 @@ export default function OnboardingOverlay() {
     }
   }, []);
 
+  const modalRef = useRef<HTMLDivElement>(null);
+
   const dismiss = () => {
     localStorage.setItem(ONBOARDING_KEY, 'true');
     setVisible(false);
   };
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      dismiss();
+      return;
+    }
+    if (e.key === 'Tab' && modalRef.current) {
+      const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!visible) return;
+    window.addEventListener('keydown', handleKeyDown);
+    const timer = setTimeout(() => {
+      const btn = modalRef.current?.querySelector<HTMLElement>('button');
+      btn?.focus();
+    }, 0);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      clearTimeout(timer);
+    };
+  }, [visible, handleKeyDown]);
 
   if (!visible) return null;
 
@@ -50,8 +91,13 @@ export default function OnboardingOverlay() {
   const isLast = step === steps.length - 1;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-      <div className="bg-gray-900 border border-gray-700 rounded-lg shadow-2xl max-w-md w-full mx-4 p-6">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Getting started"
+    >
+      <div ref={modalRef} className="bg-gray-900 border border-gray-700 rounded-lg shadow-2xl max-w-md w-full mx-4 p-6">
         <div className="flex items-center justify-between mb-4">
           <span className="text-[10px] text-gray-500 uppercase tracking-wide">
             Step {step + 1} of {steps.length}

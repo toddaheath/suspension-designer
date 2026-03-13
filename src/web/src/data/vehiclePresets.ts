@@ -40,6 +40,7 @@ export const VEHICLE_PRESETS: VehiclePreset[] = [
       tireRadius: 190,
       cgHeight: 280,
       frontBrakeProportion: 0.62,
+      antiRollBarRate: 8000,
     },
   },
   {
@@ -73,6 +74,7 @@ export const VEHICLE_PRESETS: VehiclePreset[] = [
       tireRadius: 280,
       cgHeight: 450,
       frontBrakeProportion: 0.58,
+      antiRollBarRate: 15000,
     },
   },
   {
@@ -106,6 +108,7 @@ export const VEHICLE_PRESETS: VehiclePreset[] = [
       tireRadius: 250,
       cgHeight: 380,
       frontBrakeProportion: 0.60,
+      antiRollBarRate: 25000,
     },
   },
   {
@@ -139,6 +142,7 @@ export const VEHICLE_PRESETS: VehiclePreset[] = [
       tireRadius: 310,
       cgHeight: 520,
       frontBrakeProportion: 0.60,
+      antiRollBarRate: 10000,
     },
   },
   {
@@ -172,6 +176,7 @@ export const VEHICLE_PRESETS: VehiclePreset[] = [
       tireRadius: 340,
       cgHeight: 650,
       frontBrakeProportion: 0.58,
+      antiRollBarRate: 18000,
     },
   },
   {
@@ -205,6 +210,7 @@ export const VEHICLE_PRESETS: VehiclePreset[] = [
       tireRadius: 210,
       cgHeight: 350,
       frontBrakeProportion: 0.55,
+      antiRollBarRate: 5000,
     },
   },
 ];

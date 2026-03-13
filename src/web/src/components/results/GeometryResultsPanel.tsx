@@ -87,6 +87,7 @@ export default function GeometryResultsPanel() {
         { label: 'Natural Frequency', value: dynamics.naturalFrequency.toFixed(2), unit: 'Hz', targetKey: 'naturalFrequency', numericValue: dynamics.naturalFrequency },
         { label: 'Damping Ratio', value: dynamics.dampingRatio.toFixed(3), unit: '', targetKey: 'dampingRatio', numericValue: dynamics.dampingRatio },
         { label: 'Critical Damping', value: dv(dynamics.criticalDamping, 'damping').toFixed(1), unit: ul('damping') },
+        { label: 'Roll Stiffness', value: dynamics.rollStiffness.toFixed(1), unit: 'N\u00b7m/deg' },
       ]
     : [];
 

@@ -32,6 +32,7 @@ export interface VehicleParams {
   tireRadius: number;
   cgHeight: number;
   frontBrakeProportion: number;
+  antiRollBarRate: number;
 }
 
 export interface GeometryResult {
@@ -49,6 +50,7 @@ export interface DynamicsResult {
   naturalFrequency: number;
   dampingRatio: number;
   criticalDamping: number;
+  rollStiffness: number;
 }
 
 export interface CamberCurvePoint {
@@ -164,4 +166,5 @@ export interface SuspensionDesignPayload {
   tireRadius: number;
   cgHeight: number;
   frontBrakeProportion: number;
+  antiRollBarRate: number;
 }

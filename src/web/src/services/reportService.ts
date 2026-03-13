@@ -186,6 +186,7 @@ ${complianceSummary}
     ['Tire Radius', vehicleParams.tireRadius.toFixed(0), 'mm'],
     ['CG Height', vehicleParams.cgHeight.toFixed(0), 'mm'],
     ['Front Brake Bias', (vehicleParams.frontBrakeProportion * 100).toFixed(0), '%'],
+    ['Anti-Roll Bar Rate', (vehicleParams.antiRollBarRate ?? 0).toFixed(0), 'N/m'],
   ])}
 </table>
 </div>
