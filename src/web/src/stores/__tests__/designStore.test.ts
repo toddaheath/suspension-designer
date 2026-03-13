@@ -309,30 +309,26 @@ describe('useDesignStore', () => {
       // Import the saved JSON
       const result = store.getState().importFromJson(json);
 
-      expect(result).toBe(true);
+      expect(result).toBe('');
       expect(store.getState().name).toBe('Original');
       expect(store.getState().hardpoints.upperBallJoint.x).toBe(42);
       expect(store.getState().isDirty).toBe(true);
       expect(store.getState().designId).toBeNull();
     });
 
-    it('importFromJson with invalid JSON returns false', () => {
+    it('importFromJson with invalid JSON returns error', () => {
       const store = useDesignStore;
       const result = store.getState().importFromJson('not valid json {{{');
-      expect(result).toBe(false);
+      expect(result).toBe('Invalid JSON file');
     });
 
-    it('importFromJson with missing hardpoints returns false', () => {
+    it('importFromJson with missing hardpoints returns error', () => {
       const store = useDesignStore;
-      const json = JSON.stringify({ name: 'No hardpoints', vehicleParams: {} });
-      // The store checks !data.hardpoints — an empty object is truthy, but
-      // a payload with hardpoints explicitly absent should fail.
       const jsonMissing = JSON.stringify({ name: 'Missing', vehicleParams: { trackWidth: 1200 } });
-      // Remove hardpoints key entirely
       const obj = JSON.parse(jsonMissing);
       delete obj.hardpoints;
       const result = store.getState().importFromJson(JSON.stringify(obj));
-      expect(result).toBe(false);
+      expect(result).toContain('hardpoints');
     });
 
     it('importFromJson rejects hardpoint missing x/y/z', () => {
@@ -340,7 +336,7 @@ describe('useDesignStore', () => {
       const exported = JSON.parse(store.getState().exportToJson());
       exported.hardpoints.upperBallJoint = { x: 1 }; // missing y, z
       const result = store.getState().importFromJson(JSON.stringify(exported));
-      expect(result).toBe(false);
+      expect(result).toContain('upperBallJoint');
     });
 
     it('importFromJson rejects non-numeric hardpoint coordinates', () => {
@@ -348,7 +344,7 @@ describe('useDesignStore', () => {
       const exported = JSON.parse(store.getState().exportToJson());
       exported.hardpoints.lowerBallJoint = { x: 'bad', y: 0, z: 0 };
       const result = store.getState().importFromJson(JSON.stringify(exported));
-      expect(result).toBe(false);
+      expect(result).toContain('lowerBallJoint');
     });
 
     it('importFromJson rejects zero or negative trackWidth', () => {
@@ -356,7 +352,7 @@ describe('useDesignStore', () => {
       const exported = JSON.parse(store.getState().exportToJson());
       exported.vehicleParams.trackWidth = 0;
       const result = store.getState().importFromJson(JSON.stringify(exported));
-      expect(result).toBe(false);
+      expect(result).toContain('trackWidth');
     });
 
     it('importFromJson rejects missing springRate', () => {
@@ -364,7 +360,7 @@ describe('useDesignStore', () => {
       const exported = JSON.parse(store.getState().exportToJson());
       delete exported.vehicleParams.springRate;
       const result = store.getState().importFromJson(JSON.stringify(exported));
-      expect(result).toBe(false);
+      expect(result).toContain('springRate');
     });
   });
 });

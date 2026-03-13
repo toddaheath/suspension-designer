@@ -70,6 +70,10 @@ export default function AppLayout() {
     });
   };
 
+  const setActiveChartTab = useUIStore((s) => s.setActiveChartTab);
+
+  const chartTabKeys = ['camber', 'rollCenter', 'dynamics', 'wheelRate', 'instantCenter', 'bumpSteer', 'antiGeometry', 'steering', 'sensitivity'] as const;
+
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     const target = e.target as HTMLElement;
     if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
@@ -80,7 +84,14 @@ export default function AppLayout() {
       e.preventDefault();
       setShortcutsOpen((prev) => !prev);
     }
-  }, []);
+
+    // Number keys 1-9 switch chart tabs
+    const num = parseInt(e.key);
+    if (num >= 1 && num <= chartTabKeys.length && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      e.preventDefault();
+      setActiveChartTab(chartTabKeys[num - 1]);
+    }
+  }, [setActiveChartTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);

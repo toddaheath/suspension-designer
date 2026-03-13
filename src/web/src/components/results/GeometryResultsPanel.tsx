@@ -35,6 +35,9 @@ export default function GeometryResultsPanel() {
   const camberCurve = useCalculationStore((s) => s.camberCurve);
   const rollCenterCurve = useCalculationStore((s) => s.rollCenterCurve);
   const bumpSteerCurve = useCalculationStore((s) => s.bumpSteerCurve);
+  const motionRatioCurve = useCalculationStore((s) => s.motionRatioCurve);
+  const wheelRateCurve = useCalculationStore((s) => s.wheelRateCurve);
+  const instantCenterCurve = useCalculationStore((s) => s.instantCenterCurve);
   const isLoading = useCalculationStore((s) => s.isLoading);
   const error = useCalculationStore((s) => s.error);
   const targets = useTargetStore((s) => s.targets);
@@ -125,6 +128,7 @@ export default function GeometryResultsPanel() {
     const csv = exportResultsCsv({
       geometry, dynamics, antiGeometry: antiGeo, steering,
       camberCurve, rollCenterCurve, bumpSteerCurve,
+      motionRatioCurve, wheelRateCurve, instantCenterCurve,
     });
     downloadCsv(csv, 'suspension-results.csv');
   };
