@@ -7,6 +7,8 @@ import type {
   CamberCurvePoint,
   RollCenterPoint,
   BumpSteerPoint,
+  MotionRatioPoint,
+  WheelRatePoint,
   SteeringResult,
 } from '../types/suspension';
 import type { TargetRange, TargetKey } from '../stores/targetStore';
@@ -24,6 +26,8 @@ interface ReportData {
   camberCurve: CamberCurvePoint[];
   rollCenterCurve: RollCenterPoint[];
   bumpSteerCurve: BumpSteerPoint[];
+  motionRatioCurve: MotionRatioPoint[];
+  wheelRateCurve: WheelRatePoint[];
   targets: Record<TargetKey, TargetRange>;
 }
 
@@ -54,8 +58,9 @@ function formatDate(): string {
 export function generateReportHtml(data: ReportData): string {
   const {
     name, notes, hardpoints, vehicleParams,
-    geometry, dynamics, antiGeometry,
+    geometry, dynamics, antiGeometry, steering,
     camberCurve, rollCenterCurve, bumpSteerCurve,
+    motionRatioCurve, wheelRateCurve,
     targets,
   } = data;
 
@@ -278,6 +283,36 @@ ${bumpSteerCurve.length > 0 ? `
 <table>
   <tr><th>Travel (mm)</th><th>Toe Angle (deg)</th></tr>
   ${curveRows(bumpSteerCurve.map((p) => ({ col1: p.wheelTravel, col2: p.toeAngleDegrees })))}
+</table>
+` : ''}
+
+<div class="two-col">
+${motionRatioCurve.length > 0 ? `
+<div>
+<h2>Motion Ratio Curve</h2>
+<table>
+  <tr><th>Travel (mm)</th><th>Motion Ratio</th></tr>
+  ${curveRows(motionRatioCurve.map((p) => ({ col1: p.wheelTravel, col2: p.motionRatio })))}
+</table>
+</div>
+` : ''}
+
+${wheelRateCurve.length > 0 ? `
+<div>
+<h2>Wheel Rate Curve</h2>
+<table>
+  <tr><th>Travel (mm)</th><th>Wheel Rate (N/mm)</th></tr>
+  ${curveRows(wheelRateCurve.map((p) => ({ col1: p.wheelTravel, col2: p.wheelRate })))}
+</table>
+</div>
+` : ''}
+</div>
+
+${steering?.ackermannCurve && steering.ackermannCurve.length > 0 ? `
+<h2>Ackermann Geometry</h2>
+<table>
+  <tr><th>Steering Angle (deg)</th><th>Ackermann (%)</th></tr>
+  ${curveRows(steering.ackermannCurve.map((p) => ({ col1: p.steeringAngleDegrees, col2: p.ackermannPercent })))}
 </table>
 ` : ''}
 

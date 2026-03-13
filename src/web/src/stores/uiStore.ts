@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-type ChartTab = 'camber' | 'rollCenter' | 'dynamics' | 'bumpSteer' | 'antiGeometry' | 'steering' | 'sensitivity';
+type ChartTab = 'camber' | 'rollCenter' | 'dynamics' | 'wheelRate' | 'instantCenter' | 'bumpSteer' | 'antiGeometry' | 'steering' | 'sensitivity' | 'heatmap';
 type ViewMode = '3d' | 'charts' | 'split';
 
 interface UIState {

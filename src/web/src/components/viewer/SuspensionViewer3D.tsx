@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { SuspensionScene } from './SuspensionScene';
 import { useDesignStore } from '../../stores/designStore';
+import { useCalculationStore } from '../../stores/calculationStore';
 import { solveWheelTravel } from '../../services/kinematicsService';
 
 export default function SuspensionViewer3D() {
@@ -8,7 +9,9 @@ export default function SuspensionViewer3D() {
   const sceneRef = useRef<SuspensionScene | null>(null);
   const hardpoints = useDesignStore((s) => s.hardpoints);
   const tireRadius = useDesignStore((s) => s.vehicleParams.tireRadius);
+  const icCurve = useCalculationStore((s) => s.instantCenterCurve);
   const [showLabels, setShowLabels] = useState(true);
+  const [showICPath, setShowICPath] = useState(false);
 
   // Animation state
   const [wheelTravel, setWheelTravel] = useState(0);
@@ -55,6 +58,15 @@ export default function SuspensionViewer3D() {
       sceneRef.current.setAnnotationsVisible(showLabels);
     }
   }, [showLabels]);
+
+  useEffect(() => {
+    if (sceneRef.current) {
+      sceneRef.current.setICPathVisible(showICPath);
+      if (showICPath) {
+        sceneRef.current.updateICPath(icCurve);
+      }
+    }
+  }, [showICPath, icCurve]);
 
   // Animation loop: oscillate between -75mm and +75mm
   useEffect(() => {
@@ -122,6 +134,17 @@ export default function SuspensionViewer3D() {
           }`}
         >
           Labels
+        </button>
+        <button
+          onClick={() => setShowICPath(!showICPath)}
+          className={`px-2 py-1 text-xs rounded border ${
+            showICPath
+              ? 'bg-emerald-600 border-emerald-500 text-white'
+              : 'bg-gray-800 border-gray-600 text-gray-400'
+          }`}
+          title="Show instant center migration path"
+        >
+          IC
         </button>
         <button
           onClick={() => sceneRef.current?.resetCamera()}

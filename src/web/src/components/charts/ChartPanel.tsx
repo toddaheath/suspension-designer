@@ -5,16 +5,22 @@ import MotionRatioChart from './MotionRatioChart';
 import BumpSteerChart from './BumpSteerChart';
 import AntiGeometryPanel from './AntiGeometryPanel';
 import SteeringChart from './SteeringChart';
+import WheelRateChart from './WheelRateChart';
+import InstantCenterChart from './InstantCenterChart';
 import SensitivityPanel from '../analysis/SensitivityPanel';
+import SensitivityHeatmap from '../analysis/SensitivityHeatmap';
 
 const TABS = [
   { key: 'camber' as const, label: 'Camber' },
   { key: 'rollCenter' as const, label: 'Roll Center' },
   { key: 'dynamics' as const, label: 'Dynamics' },
+  { key: 'wheelRate' as const, label: 'Wheel Rate' },
+  { key: 'instantCenter' as const, label: 'IC Migration' },
   { key: 'bumpSteer' as const, label: 'Bump Steer' },
   { key: 'antiGeometry' as const, label: 'Anti-Geometry' },
   { key: 'steering' as const, label: 'Steering' },
   { key: 'sensitivity' as const, label: 'Sensitivity' },
+  { key: 'heatmap' as const, label: 'Heatmap' },
 ];
 
 export default function ChartPanel() {
@@ -42,12 +48,19 @@ export default function ChartPanel() {
         {activeTab === 'camber' && <CamberCurveChart />}
         {activeTab === 'rollCenter' && <RollCenterChart />}
         {activeTab === 'dynamics' && <MotionRatioChart />}
+        {activeTab === 'wheelRate' && <WheelRateChart />}
+        {activeTab === 'instantCenter' && <InstantCenterChart />}
         {activeTab === 'bumpSteer' && <BumpSteerChart />}
         {activeTab === 'antiGeometry' && <AntiGeometryPanel />}
         {activeTab === 'steering' && <SteeringChart />}
         {activeTab === 'sensitivity' && (
           <div className="overflow-y-auto h-full">
             <SensitivityPanel />
+          </div>
+        )}
+        {activeTab === 'heatmap' && (
+          <div className="overflow-y-auto h-full">
+            <SensitivityHeatmap />
           </div>
         )}
       </div>

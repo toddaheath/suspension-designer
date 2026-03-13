@@ -7,6 +7,8 @@ import type {
   RollCenterPoint,
   BumpSteerPoint,
   MotionRatioPoint,
+  WheelRatePoint,
+  InstantCenterPoint,
   AntiGeometryResult,
   SteeringResult,
   SweepResult,
@@ -199,6 +201,32 @@ function computeMotionRatioCurve(hp: DoubleWishboneHardpoints): MotionRatioPoint
   return points;
 }
 
+function computeWheelRateCurve(hp: DoubleWishboneHardpoints, vp: VehicleParams): WheelRatePoint[] {
+  const delta = 0.5;
+  const points: WheelRatePoint[] = [];
+  for (let travel = -75; travel <= 75; travel += 5) {
+    const displaced = solveWheelTravel(hp, travel);
+    const displacedPlus = solveWheelTravel(hp, travel + delta);
+    const len1 = springLength(displaced);
+    const len2 = springLength(displacedPlus);
+    const mr = Math.abs(len1 - len2) / delta;
+    // Wheel rate = spring rate * MR^2
+    const wheelRate = (vp.springRate / 1000) * mr * mr;
+    points.push({ wheelTravel: travel, wheelRate });
+  }
+  return points;
+}
+
+function computeInstantCenterCurve(hp: DoubleWishboneHardpoints): InstantCenterPoint[] {
+  const points: InstantCenterPoint[] = [];
+  for (let travel = -75; travel <= 75; travel += 5) {
+    const displaced = solveWheelTravel(hp, travel);
+    const ic = computeInstantCenter(displaced);
+    points.push({ wheelTravel: travel, icY: ic.y, icZ: ic.z });
+  }
+  return points;
+}
+
 function computeDynamics(hp: DoubleWishboneHardpoints, vp: VehicleParams): DynamicsResult {
   const motionRatio = computeMotionRatio(hp);
   const wheelRate = (vp.springRate / 1000) * motionRatio * motionRatio; // N/mm
@@ -309,5 +337,7 @@ export function calculateSweepLocal(
     steering: computeSteering(vehicleParams),
     bumpSteer: computeBumpSteer(hardpoints),
     motionRatioCurve: computeMotionRatioCurve(hardpoints),
+    wheelRateCurve: computeWheelRateCurve(hardpoints, vehicleParams),
+    instantCenterCurve: computeInstantCenterCurve(hardpoints),
   };
 }
