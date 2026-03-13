@@ -84,7 +84,7 @@ interface DesignState {
   resetToDefaults: () => void;
   applyPreset: (preset: VehiclePreset) => void;
   exportToJson: () => string;
-  importFromJson: (json: string) => boolean;
+  importFromJson: (json: string) => string;
   undo: () => void;
   redo: () => void;
   canUndo: boolean;
@@ -211,7 +211,8 @@ export const useDesignStore = create<DesignState>()(
     importFromJson: (json: string) => {
       try {
         const data = JSON.parse(json) as DesignData;
-        if (!data.hardpoints || !data.vehicleParams) return false;
+        if (!data.hardpoints) return 'Missing "hardpoints" object';
+        if (!data.vehicleParams) return 'Missing "vehicleParams" object';
 
         // Validate required hardpoint keys exist and have x/y/z
         const requiredHardpoints: (keyof DoubleWishboneHardpoints)[] = [
@@ -221,7 +222,10 @@ export const useDesignStore = create<DesignState>()(
         ];
         for (const key of requiredHardpoints) {
           const pt = data.hardpoints[key];
-          if (!pt || typeof pt.x !== 'number' || typeof pt.y !== 'number' || typeof pt.z !== 'number') return false;
+          if (!pt) return `Missing hardpoint: ${key}`;
+          if (typeof pt.x !== 'number' || typeof pt.y !== 'number' || typeof pt.z !== 'number') {
+            return `Invalid coordinates for ${key} (need x, y, z numbers)`;
+          }
         }
 
         // Validate required vehicle params
@@ -230,7 +234,8 @@ export const useDesignStore = create<DesignState>()(
           'springRate', 'dampingCoefficient', 'tireRadius',
         ];
         for (const key of requiredParams) {
-          if (typeof data.vehicleParams[key] !== 'number' || data.vehicleParams[key] <= 0) return false;
+          if (typeof data.vehicleParams[key] !== 'number') return `Missing vehicle param: ${key}`;
+          if (data.vehicleParams[key] <= 0) return `Vehicle param "${key}" must be > 0`;
         }
 
         set((state) => {
@@ -241,9 +246,9 @@ export const useDesignStore = create<DesignState>()(
           state.designId = null;
           state.isDirty = true;
         });
-        return true;
+        return '';
       } catch {
-        return false;
+        return 'Invalid JSON file';
       }
     },
 

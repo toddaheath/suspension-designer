@@ -43,6 +43,8 @@ export default function ComparisonPanel() {
     { label: 'Caster Angle', current: currentGeo.casterAngleDegrees, comparison: compGeo.casterAngleDegrees, unit: 'deg' },
     { label: 'Scrub Radius', current: currentGeo.scrubRadius, comparison: compGeo.scrubRadius, unit: 'mm' },
     { label: 'Mechanical Trail', current: currentGeo.mechanicalTrail, comparison: compGeo.mechanicalTrail, unit: 'mm' },
+    { label: 'IC Y', current: currentGeo.instantCenter.y, comparison: compGeo.instantCenter.y, unit: 'mm' },
+    { label: 'IC Z', current: currentGeo.instantCenter.z, comparison: compGeo.instantCenter.z, unit: 'mm' },
   ];
 
   const dynamicsRows: DeltaRow[] = [

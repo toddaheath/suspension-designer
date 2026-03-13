@@ -181,7 +181,7 @@ describe('DesignToolbar', () => {
       await new Promise((r) => setTimeout(r, 50));
     });
 
-    expect(screen.getByText('Invalid design file')).toBeInTheDocument();
+    expect(screen.getByText('Invalid JSON file')).toBeInTheDocument();
   });
 
   // ─── Reset ────────────────────────────────────────────────────────

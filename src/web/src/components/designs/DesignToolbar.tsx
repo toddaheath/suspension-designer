@@ -63,8 +63,8 @@ export default function DesignToolbar() {
     setImportError('');
     const reader = new FileReader();
     reader.onload = () => {
-      const ok = importFromJson(reader.result as string);
-      if (!ok) setImportError('Invalid design file');
+      const error = importFromJson(reader.result as string);
+      if (error) setImportError(error);
     };
     reader.readAsText(file);
     e.target.value = '';

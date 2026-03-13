@@ -5,6 +5,9 @@ import type {
   CamberCurvePoint,
   RollCenterPoint,
   BumpSteerPoint,
+  MotionRatioPoint,
+  WheelRatePoint,
+  InstantCenterPoint,
   SteeringResult,
 } from '../types/suspension';
 
@@ -20,6 +23,9 @@ export function exportResultsCsv(data: {
   camberCurve: CamberCurvePoint[];
   rollCenterCurve: RollCenterPoint[];
   bumpSteerCurve: BumpSteerPoint[];
+  motionRatioCurve?: MotionRatioPoint[];
+  wheelRateCurve?: WheelRatePoint[];
+  instantCenterCurve?: InstantCenterPoint[];
 }): string {
   const lines: string[] = [];
 
@@ -79,6 +85,33 @@ export function exportResultsCsv(data: {
     lines.push(toCsvRow(['Wheel Travel (mm)', 'Toe Angle (deg)']));
     data.bumpSteerCurve.forEach((p) =>
       lines.push(toCsvRow([p.wheelTravel.toFixed(2), p.toeAngleDegrees.toFixed(4)])),
+    );
+    lines.push('');
+  }
+
+  if (data.motionRatioCurve && data.motionRatioCurve.length > 0) {
+    lines.push('Motion Ratio Curve');
+    lines.push(toCsvRow(['Wheel Travel (mm)', 'Motion Ratio']));
+    data.motionRatioCurve.forEach((p) =>
+      lines.push(toCsvRow([p.wheelTravel.toFixed(2), p.motionRatio.toFixed(4)])),
+    );
+    lines.push('');
+  }
+
+  if (data.wheelRateCurve && data.wheelRateCurve.length > 0) {
+    lines.push('Wheel Rate Curve');
+    lines.push(toCsvRow(['Wheel Travel (mm)', 'Wheel Rate (N/mm)']));
+    data.wheelRateCurve.forEach((p) =>
+      lines.push(toCsvRow([p.wheelTravel.toFixed(2), p.wheelRate.toFixed(4)])),
+    );
+    lines.push('');
+  }
+
+  if (data.instantCenterCurve && data.instantCenterCurve.length > 0) {
+    lines.push('Instant Center Migration');
+    lines.push(toCsvRow(['Wheel Travel (mm)', 'IC Y (mm)', 'IC Z (mm)']));
+    data.instantCenterCurve.forEach((p) =>
+      lines.push(toCsvRow([p.wheelTravel.toFixed(2), p.icY.toFixed(2), p.icZ.toFixed(2)])),
     );
     lines.push('');
   }

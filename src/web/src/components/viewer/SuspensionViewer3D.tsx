@@ -68,6 +68,20 @@ export default function SuspensionViewer3D() {
     }
   }, [showICPath, icCurve]);
 
+  // Space bar play/pause
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') return;
+      if (e.key === ' ') {
+        e.preventDefault();
+        toggleAnimation();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [wheelTravel, isAnimating]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Animation loop: oscillate between -75mm and +75mm
   useEffect(() => {
     if (!isAnimating) {
