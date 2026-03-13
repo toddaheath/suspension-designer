@@ -61,6 +61,7 @@ const DEFAULT_VEHICLE_PARAMS: VehicleParams = {
   tireRadius: 228,
   cgHeight: 300,
   frontBrakeProportion: 0.6,
+  antiRollBarRate: 0,
 };
 
 interface DesignState {
@@ -136,6 +137,7 @@ function applyDesignDetail(state: DesignState, detail: DesignDetail) {
     tireRadius: detail.tireRadius,
     cgHeight: detail.cgHeight,
     frontBrakeProportion: detail.frontBrakeProportion,
+    antiRollBarRate: detail.antiRollBarRate ?? 0,
   };
 }
 

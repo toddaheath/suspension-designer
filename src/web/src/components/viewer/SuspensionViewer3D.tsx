@@ -12,6 +12,7 @@ export default function SuspensionViewer3D() {
   const icCurve = useCalculationStore((s) => s.instantCenterCurve);
   const [showLabels, setShowLabels] = useState(true);
   const [showICPath, setShowICPath] = useState(false);
+  const [wireframe, setWireframe] = useState(false);
 
   // Animation state
   const [wheelTravel, setWheelTravel] = useState(0);
@@ -159,6 +160,21 @@ export default function SuspensionViewer3D() {
           title="Show instant center migration path"
         >
           IC
+        </button>
+        <button
+          onClick={() => {
+            const next = !wireframe;
+            setWireframe(next);
+            sceneRef.current?.setWireframe(next);
+          }}
+          className={`px-2 py-1 text-xs rounded border ${
+            wireframe
+              ? 'bg-purple-600 border-purple-500 text-white'
+              : 'bg-gray-800 border-gray-600 text-gray-400'
+          }`}
+          title="Toggle wireframe mode"
+        >
+          Wire
         </button>
         <button
           onClick={() => sceneRef.current?.resetCamera()}

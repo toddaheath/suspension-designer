@@ -31,5 +31,6 @@ export function buildPayload(
     tireRadius: vehicleParams.tireRadius,
     cgHeight: vehicleParams.cgHeight,
     frontBrakeProportion: vehicleParams.frontBrakeProportion,
+    antiRollBarRate: vehicleParams.antiRollBarRate,
   };
 }

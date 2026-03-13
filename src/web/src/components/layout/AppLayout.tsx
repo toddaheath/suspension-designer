@@ -21,6 +21,7 @@ import { useUnitStore } from '../../stores/unitStore';
 import { generateReportHtml, openReport } from '../../services/reportService';
 import { generateShareUrl, decodeDesign } from '../../services/shareService';
 import { useNotificationStore } from '../../stores/notificationStore';
+import { useThemeStore } from '../../stores/themeStore';
 
 const isDemo = import.meta.env.VITE_DEMO_MODE === 'true';
 
@@ -39,8 +40,15 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const unitSystem = useUnitStore((s) => s.system);
   const toggleUnits = useUnitStore((s) => s.toggle);
+  const theme = useThemeStore((s) => s.theme);
+  const toggleTheme = useThemeStore((s) => s.toggle);
 
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+
+  // Sync theme class to <html> element
+  useEffect(() => {
+    document.documentElement.classList.toggle('light', theme === 'light');
+  }, [theme]);
 
   // Load shared design from URL on mount
   useEffect(() => {
@@ -85,13 +93,20 @@ export default function AppLayout() {
       setShortcutsOpen((prev) => !prev);
     }
 
+    if (e.key === 't' || e.key === 'T') {
+      if (!e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        toggleTheme();
+      }
+    }
+
     // Number keys 1-9 switch chart tabs
     const num = parseInt(e.key);
     if (num >= 1 && num <= chartTabKeys.length && !e.metaKey && !e.ctrlKey && !e.altKey) {
       e.preventDefault();
       setActiveChartTab(chartTabKeys[num - 1]);
     }
-  }, [setActiveChartTab]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [setActiveChartTab, toggleTheme]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -166,6 +181,13 @@ export default function AppLayout() {
             title={`Switch to ${unitSystem === 'metric' ? 'imperial' : 'metric'} units`}
           >
             {unitSystem === 'metric' ? 'mm' : 'in'}
+          </button>
+          <button
+            onClick={toggleTheme}
+            className="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded border border-gray-700 text-gray-400 hover:text-gray-200"
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          >
+            {theme === 'dark' ? '\u2600' : '\u263E'}
           </button>
           <button
             onClick={handleShare}

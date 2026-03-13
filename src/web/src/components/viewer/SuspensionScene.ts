@@ -38,6 +38,7 @@ export class SuspensionScene {
   private icTrail: THREE.Line | null = null;
   private icMarker: THREE.Mesh | null = null;
   private showICPath = false;
+  private wireframeMode = false;
 
   constructor(container: HTMLDivElement) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
@@ -428,6 +429,19 @@ export class SuspensionScene {
   setAnnotationsVisible(visible: boolean): void {
     this.showAnnotations = visible;
     this.annotations.visible = visible;
+  }
+
+  setWireframe(enabled: boolean): void {
+    this.wireframeMode = enabled;
+    this.scene.traverse((obj) => {
+      if (obj instanceof THREE.Mesh && obj.material instanceof THREE.MeshPhongMaterial) {
+        obj.material.wireframe = enabled;
+      }
+    });
+  }
+
+  getWireframe(): boolean {
+    return this.wireframeMode;
   }
 
   private animate = (): void => {

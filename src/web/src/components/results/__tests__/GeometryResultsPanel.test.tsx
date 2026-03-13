@@ -27,6 +27,7 @@ const sampleDynamics = {
   naturalFrequency: 1.42,
   dampingRatio: 0.345,
   criticalDamping: 4200.5,
+  rollStiffness: 850.2,
 };
 
 const sampleAntiGeometry = {

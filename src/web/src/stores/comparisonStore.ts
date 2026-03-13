@@ -103,6 +103,7 @@ export const useComparisonStore = create<ComparisonState>((set) => ({
         tireRadius: detail.tireRadius,
         cgHeight: detail.cgHeight,
         frontBrakeProportion: detail.frontBrakeProportion,
+        antiRollBarRate: detail.antiRollBarRate ?? 0,
       };
 
       const sweep = isDemo

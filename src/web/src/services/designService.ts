@@ -35,6 +35,7 @@ export interface DesignDetail extends DesignSummary {
   tireRadius: number;
   cgHeight: number;
   frontBrakeProportion: number;
+  antiRollBarRate?: number;
 }
 
 export async function listDesigns(): Promise<DesignSummary[]> {
